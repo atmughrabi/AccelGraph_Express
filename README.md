@@ -14,7 +14,7 @@ AccelGraph-CAPI is coded using C giving the researcher full flexibility with mod
 
 In this iteration we added a cache that is aware of the vertex reuse (Hot/Warm/Cold)
 
-![End-to-End Acceleration](./06_slides/fig/theme2.png "AccelGraph-CAPI")
+![End-to-End Acceleration](./06_slides/fig/theme2.png "AccelGraph-CAPI Caching")
 
 
 
