@@ -1,9 +1,9 @@
 [![Build Status](https://travis-ci.com/atmughrabi/AccelGraph.svg?branch=master)](https://travis-ci.com/atmughrabi/AccelGraph)
 [<p align="center"><img src="./06_slides/fig/logo3.png" width="650" ></p>](#accel-graph-benchmark-suite)
 
-# AccelGraph-CAPI Benchmark Suite
+# AccelGraph-CAPI Express Cache Benchmark Suite
 
-## Graph Processing Framework that supports | OpenMP || CAPI
+## Graph Processing Framework that supports | OpenMP || CAPI | Caching
 
 ## Overview
 
