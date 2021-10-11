@@ -1,15 +1,16 @@
+
 // -----------------------------------------------------------------------------
 //
 //		"ACCEL-GRAPH Shared Memory Accelerator Project"
 //
 // -----------------------------------------------------------------------------
-// Copyright (c) 2014-2019 All rights reserved
+// Copyright (c) 2014-2021 All rights reserved
 // -----------------------------------------------------------------------------
 // Author : Abdullah Mughrabi atmughrabi@gmail.com/atmughra@ncsu.edu
 // File   : cu_control.sv
-// Create : 2019-09-26 15:18:39
-// Revise : 2019-11-07 19:49:13
-// Editor : sublime text3, tab size (4)
+// Create : 2021-10-11 06:48:04
+// Revise : 2021-10-11 06:48:06
+// Editor : sublime text4, tab size (4)
 // -----------------------------------------------------------------------------
 
 import GLOBALS_AFU_PKG::*;
@@ -20,9 +21,9 @@ import AFU_PKG::*;
 import CU_PKG::*;
 
 module cu_control #(
-	parameter NUM_READ_REQUESTS = 2                   ,
-	parameter NUM_GRAPH_CU      = NUM_GRAPH_CU_GLOBAL ,
-	parameter NUM_VERTEX_CU     = NUM_VERTEX_CU_GLOBAL
+	parameter NUM_READ_REQUESTS                        = 2                   ,
+	parameter NUM_GRAPH_CU                             = NUM_GRAPH_CU_GLOBAL ,
+	parameter NUM_VERTEX_CU                            = NUM_VERTEX_CU_GLOBAL
 ) (
 	input  logic              clock                       , // Clock
 	input  logic              rstn_in                     ,
@@ -91,9 +92,9 @@ module cu_control #(
 
 	always_ff @(posedge clock or negedge rstn_in) begin
 		if(~rstn_in) begin
-			rstn_internal <= 0;
+			rstn_internal                              <= 0;
 		end else begin
-			rstn_internal <= rstn_in;
+			rstn_internal                              <= rstn_in;
 		end
 	end
 
@@ -103,9 +104,9 @@ module cu_control #(
 
 	always_ff @(posedge clock or negedge rstn_internal) begin
 		if(~rstn_internal) begin
-			enabled <= 0;
+			enabled                                    <= 0;
 		end else begin
-			enabled <= enabled_in;
+			enabled                                    <= enabled_in;
 		end
 	end
 
@@ -115,40 +116,40 @@ module cu_control #(
 
 	always_ff @(posedge clock or negedge rstn_internal) begin
 		if(~rstn_internal) begin
-			wed_request_in_latched.valid             <= 0;
-			read_response_in_latched.valid           <= 0;
-			prefetch_read_response_in_latched.valid  <= 0;
-			prefetch_write_response_in_latched.valid <= 0;
-			write_response_in_latched.valid          <= 0;
-			read_data_0_in_latched.valid             <= 0;
-			read_data_1_in_latched.valid             <= 0;
+			wed_request_in_latched.valid               <= 0;
+			read_response_in_latched.valid             <= 0;
+			prefetch_read_response_in_latched.valid    <= 0;
+			prefetch_write_response_in_latched.valid   <= 0;
+			write_response_in_latched.valid            <= 0;
+			read_data_0_in_latched.valid               <= 0;
+			read_data_1_in_latched.valid               <= 0;
 
-			read_buffer_status_latched           <= 0;
-			prefetch_read_buffer_status_latched  <= 0;
-			prefetch_write_buffer_status_latched <= 0;
-			write_buffer_status_latched          <= 0;
+			read_buffer_status_latched                 <= 0;
+			prefetch_read_buffer_status_latched        <= 0;
+			prefetch_write_buffer_status_latched       <= 0;
+			write_buffer_status_latched                <= 0;
 
 			read_buffer_status_latched.empty           <= 1;
 			prefetch_read_buffer_status_latched.empty  <= 1;
 			prefetch_write_buffer_status_latched.empty <= 1;
 			write_buffer_status_latched.empty          <= 1;
 
-			cu_configure_latched <= 0;
+			cu_configure_latched                       <= 0;
 		end else begin
-			wed_request_in_latched.valid             <= wed_request_in.valid;
-			read_response_in_latched.valid           <= read_response_in.valid;
-			prefetch_read_response_in_latched.valid  <= prefetch_read_response_in.valid;
-			prefetch_write_response_in_latched.valid <= prefetch_write_response_in.valid;
-			write_response_in_latched.valid          <= write_response_in.valid;
-			read_data_0_in_latched.valid             <= read_data_0_in.valid ;
-			read_data_1_in_latched.valid             <= read_data_1_in.valid;
+			wed_request_in_latched.valid               <= wed_request_in.valid;
+			read_response_in_latched.valid             <= read_response_in.valid;
+			prefetch_read_response_in_latched.valid    <= prefetch_read_response_in.valid;
+			prefetch_write_response_in_latched.valid   <= prefetch_write_response_in.valid;
+			write_response_in_latched.valid            <= write_response_in.valid;
+			read_data_0_in_latched.valid               <= read_data_0_in.valid ;
+			read_data_1_in_latched.valid               <= read_data_1_in.valid;
 
-			read_buffer_status_latched           <= read_buffer_status;
-			prefetch_read_buffer_status_latched  <= prefetch_read_buffer_status;
-			prefetch_write_buffer_status_latched <= prefetch_write_buffer_status;
-			write_buffer_status_latched          <= write_buffer_status;
+			read_buffer_status_latched                 <= read_buffer_status;
+			prefetch_read_buffer_status_latched        <= prefetch_read_buffer_status;
+			prefetch_write_buffer_status_latched       <= prefetch_write_buffer_status;
+			write_buffer_status_latched                <= write_buffer_status;
 
-			cu_configure_latched <= cu_configure;
+			cu_configure_latched                       <= cu_configure;
 		end
 	end
 
@@ -178,49 +179,47 @@ module cu_control #(
 
 	always_ff @(posedge clock or negedge rstn_internal) begin
 		if(~rstn_internal) begin
-			cu_return                        <= 0;
-			cu_done                          <= 0;
-			cu_status                        <= 0;
-			read_command_out.valid           <= 0;
-			prefetch_read_command_out.valid  <= 0;
-			prefetch_write_command_out.valid <= 0;
-			write_command_out.valid          <= 0;
-			write_data_0_out.valid           <= 0;
-			write_data_1_out.valid           <= 0;
+			cu_return                                  <= 0;
+			cu_done                                    <= 0;
+			cu_status                                  <= 0;
+			read_command_out.valid                     <= 0;
+			prefetch_read_command_out.valid            <= 0;
+			prefetch_write_command_out.valid           <= 0;
+			write_command_out.valid                    <= 0;
+			write_data_0_out.valid                     <= 0;
+			write_data_1_out.valid                     <= 0;
 		end else begin
 			if(enabled)begin
-				cu_return                        <= cu_return_latched;
-				cu_done                          <= cu_done_latched;
-				cu_status                        <= cu_status_latched;
-				read_command_out.valid           <= read_command_out_latched.valid;
-				prefetch_read_command_out.valid  <= prefetch_read_command_out_latched.valid;
-				prefetch_write_command_out.valid <= prefetch_write_command_out_latched.valid;
-				write_command_out.valid          <= write_command_out_latched.valid;
-				write_data_0_out.valid           <= write_data_0_out_latched.valid;
-				write_data_1_out.valid           <= write_data_1_out_latched.valid;
+				cu_return                              <= cu_return_latched;
+				cu_done                                <= cu_done_latched;
+				cu_status                              <= cu_status_latched;
+				read_command_out.valid                 <= read_command_out_latched.valid;
+				prefetch_read_command_out.valid        <= prefetch_read_command_out_latched.valid;
+				prefetch_write_command_out.valid       <= prefetch_write_command_out_latched.valid;
+				write_command_out.valid                <= write_command_out_latched.valid;
+				write_data_0_out.valid                 <= write_data_0_out_latched.valid;
+				write_data_1_out.valid                 <= write_data_1_out_latched.valid;
 			end
 		end
 	end
 
 	always_ff @(posedge clock or negedge rstn_internal) begin
 		if(~rstn_internal) begin
-			read_command_out.payload           <= 0;
-			prefetch_read_command_out.payload  <= 0;
-			prefetch_write_command_out.payload <= 0;
-			write_command_out.payload          <= 0;
-			write_data_0_out.payload           <= 0;
-			write_data_1_out.payload           <= 0;
+			read_command_out.payload                   <= 0;
+			prefetch_read_command_out.payload          <= 0;
+			prefetch_write_command_out.payload         <= 0;
+			write_command_out.payload                  <= 0;
+			write_data_0_out.payload                   <= 0;
+			write_data_1_out.payload                   <= 0;
 		end else begin
-			read_command_out.payload           <= read_command_out_latched.payload;
-			prefetch_read_command_out.payload  <= prefetch_read_command_out_latched.payload;
-			prefetch_write_command_out.payload <= prefetch_write_command_out_latched.payload;
-			write_command_out.payload          <= write_command_out_latched.payload;
-			write_data_0_out.payload           <= write_data_0_out_latched.payload;
-			write_data_1_out.payload           <= write_data_1_out_latched.payload;
+			read_command_out.payload                   <= read_command_out_latched.payload;
+			prefetch_read_command_out.payload          <= prefetch_read_command_out_latched.payload;
+			prefetch_write_command_out.payload         <= prefetch_write_command_out_latched.payload;
+			write_command_out.payload                  <= write_command_out_latched.payload;
+			write_data_0_out.payload                   <= write_data_0_out_latched.payload;
+			write_data_1_out.payload                   <= write_data_1_out_latched.payload;
 		end
 	end
-
-
 
 ////////////////////////////////////////////////////////////////////////////
 //Compute Units
@@ -259,6 +258,26 @@ module cu_control #(
 //Cache Reuse Unit
 ////////////////////////////////////////////////////////////////////////////
 
+	cu_vertex_cache_reuse_control #(
+		.NUM_READ_REQUESTS(NUM_READ_REQUESTS),
+		.NUM_GRAPH_CU(NUM_GRAPH_CU),
+		.NUM_VERTEX_CU(NUM_VERTEX_CU)
+	) inst_cu_vertex_cache_reuse_control (
+		.clock              (clock),
+		.rstn_in            (rstn_in),
+		.enabled_in         (enabled_in),
+		.wed_request_in     (wed_request_in),
+		.read_response_in   (read_response_in),
+		.read_data_0_in     (read_data_0_in),
+		.read_data_1_in     (read_data_1_in),
+		.read_buffer_status (read_buffer_status),
+		.cu_configure       (cu_configure),
+		.read_command_in    (read_command_in),
+		.read_command_out   (read_command_out),
+		.read_response_out  (read_response_out),
+		.read_data_0_out    (read_data_0_out),
+		.read_data_1_out    (read_data_1_out)
+	);
 
 
 endmodule

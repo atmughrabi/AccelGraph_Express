@@ -3,13 +3,13 @@
 //		"ACCEL-GRAPH Shared Memory Accelerator Project"
 //
 // -----------------------------------------------------------------------------
-// Copyright (c) 2014-2019 All rights reserved
+// Copyright (c) 2014-2021 All rights reserved
 // -----------------------------------------------------------------------------
 // Author : Abdullah Mughrabi atmughrabi@gmail.com/atmughra@ncsu.edu
-// File   : cu_control.sv
-// Create : 2019-09-26 15:18:39
-// Revise : 2019-11-07 19:49:13
-// Editor : sublime text3, tab size (4)
+// File   : cu_graph_algorithm_cu_clusters_control.sv
+// Create : 2021-10-11 06:48:36
+// Revise : 2021-10-11 06:48:36
+// Editor : sublime text4, tab size (4)
 // -----------------------------------------------------------------------------
 
 import GLOBALS_AFU_PKG::*;
