@@ -60,12 +60,12 @@ export MAIN_DIR		  	= main
 #       		 ACCEL RUN GRAPH ARGUMENTS    			#
 #########################################################
 
-export BENCHMARKS_DIR    	?= ../../../01_GraphDatasets
+# export BENCHMARKS_DIR    	?= ../../../01_GraphDatasets
 # export BENCHMARKS_DIR    	?= ../01_test_graphs
 
 # export GRAPH_SUIT ?=
-# export GRAPH_SUIT ?= TEST
-export GRAPH_SUIT ?= LAW
+export GRAPH_SUIT ?= TEST
+# export GRAPH_SUIT ?= LAW
 # export GRAPH_SUIT ?= GAP
 # export GRAPH_SUIT ?= SNAP
 # export GRAPH_SUIT ?= KONECT
@@ -75,7 +75,7 @@ export GRAPH_SUIT ?= LAW
 # export GRAPH_NAME ?= test
 # export GRAPH_NAME ?= v51_e1021
 # export GRAPH_NAME ?= v300_e2730
-# export GRAPH_NAME ?= graphbrew
+export GRAPH_NAME ?= graphbrew
 
 # GONG # https://gonglab.pratt.duke.edu/google-dataset
 # export GRAPH_NAME ?= GONG-gplus
@@ -105,17 +105,17 @@ export GRAPH_SUIT ?= LAW
 # export GRAPH_NAME ?= LAW-hollywood-2009
 # export GRAPH_NAME ?= LAW-in-2004
 # export GRAPH_NAME ?= LAW-indochina-2004
-export GRAPH_NAME ?= LAW-it-2004
+# export GRAPH_NAME ?= LAW-it-2004
 # export GRAPH_NAME ?= LAW-ljournal-2008
 # export GRAPH_NAME ?= LAW-uk-2002
 # export GRAPH_NAME ?= LAW-uk-2005
 # export GRAPH_NAME ?= LAW-webbase-2001
 
 # export FILE_BIN_TYPE ?= graph
-# export FILE_BIN_TYPE ?= graph.bin
+export FILE_BIN_TYPE ?= graph.bin
 # export FILE_BIN_TYPE ?= graph.rand.bin
 # export FILE_BIN_TYPE ?= graph.wbin
-export FILE_BIN_TYPE ?= graph.bin.txt
+# export FILE_BIN_TYPE ?= graph.bin.txt
 # export FILE_BIN_TYPE ?= graph.rand.bin.txt
 
 # export FILE_LABEL_TYPE ?= graph_Gorder.labels
@@ -127,7 +127,7 @@ export FILE_LABEL = $(BENCHMARKS_DIR)/$(GRAPH_SUIT)/$(GRAPH_NAME)/$(FILE_LABEL_T
 
 #ALGORITHM
 export ALGORITHMS 		?= 1
-export PULL_PUSH 		?= 0
+export PULL_PUSH 		?= 2
 
 
 #GRAPH DATA_STRUCTURES
