@@ -8,7 +8,7 @@
 // Author : Abdullah Mughrabi atmughrabi@gmail.com/atmughra@ncsu.edu
 // File   : cu_vertex_cache_reuse_control.sv
 // Create : 2019-09-26 15:18:39
-// Revise : 2021-10-11 21:12:14
+// Revise : 2021-10-11 22:56:17
 // Editor : sublime text4, tab size (4)
 // -----------------------------------------------------------------------------
 
@@ -231,8 +231,104 @@ module cu_vertex_cache_reuse_control #(
 	end
 
 ////////////////////////////////////////////////////////////////////////////
-//HOT/WARM cache criterion
+// Forward/Data Arbitration Logic
 ////////////////////////////////////////////////////////////////////////////
 
+////////////////////////////////////////////////////////////////////////////
+	//read data request logic - input
+	////////////////////////////////////////////////////////////////////////////
+
+	array_struct_type_demux_bus #(
+		.DATA_WIDTH($bits(ReadWriteDataLine)),
+		.BUS_WIDTH (2                       )
+	) read_data_0_array_struct_type_demux_bus_instant (
+		.clock         (clock                                          ),
+		.rstn          (rstn_internal                                  ),
+		.sel_in        (read_data_0_in_latched.payload.cmd.array_struct),
+		.data_in       (read_data_0_in_latched                         ),
+		.data_in_valid (read_data_0_in_latched.valid                   ),
+		.data_out      (read_data_0_data_out_latched                   ),
+		.data_out_valid(read_data_0_data_out_latched_valid             )
+	);
+
+	always_ff @(posedge clock or negedge rstn) begin
+		if(~rstn) begin
+			read_data_0_data_out[0].valid <= 0;
+			read_data_0_data_out[1].valid <= 0;
+			read_data_0_data_out[0].payload <= 0;
+			read_data_0_data_out[1].payload <= 0;
+		end else begin
+			read_data_0_data_out[0].valid <= read_data_0_data_out_latched_valid[0];
+			read_data_0_data_out[1].valid <= read_data_0_data_out_latched_valid[1];
+			read_data_0_data_out[0].payload <= read_data_0_data_out_latched[0].payload;
+			read_data_0_data_out[1].payload <= read_data_0_data_out_latched[1].payload;
+		end
+	end
+
+	assign read_data_0_in_edge_job  = read_data_0_data_out[0];
+	assign read_data_0_in_edge_data = read_data_0_data_out[1];
+
+	array_struct_type_demux_bus #(
+		.DATA_WIDTH($bits(ReadWriteDataLine)),
+		.BUS_WIDTH (2                       )
+	) read_data_1_array_struct_type_demux_bus_instant (
+		.clock         (clock                                          ),
+		.rstn          (rstn_internal                                  ),
+		.sel_in        (read_data_1_in_latched.payload.cmd.array_struct),
+		.data_in       (read_data_1_in_latched                         ),
+		.data_in_valid (read_data_1_in_latched.valid                   ),
+		.data_out      (read_data_1_data_out_latched                   ),
+		.data_out_valid(read_data_1_data_out_latched_valid             )
+	);
+
+	always_ff @(posedge clock or negedge rstn) begin
+		if(~rstn) begin
+			read_data_1_data_out[0].valid <=0;
+			read_data_1_data_out[1].valid <= 0;
+			read_data_1_data_out[0].payload <= 0;
+			read_data_1_data_out[1].payload <= 0;
+		end else begin
+			read_data_1_data_out[0].valid <= read_data_1_data_out_latched_valid[0];
+			read_data_1_data_out[1].valid <= read_data_1_data_out_latched_valid[1];
+			read_data_1_data_out[0].payload <= read_data_1_data_out_latched[0].payload;
+			read_data_1_data_out[1].payload <= read_data_1_data_out_latched[1].payload;
+		end
+	end
+
+	assign read_data_1_in_edge_job  = read_data_1_data_out[0];
+	assign read_data_1_in_edge_data = read_data_1_data_out[1];
+
+	////////////////////////////////////////////////////////////////////////////
+	//data request read logic extract single edgedata from cacheline
+	////////////////////////////////////////////////////////////////////////////
+
+	cu_edge_data_read_extract_control cu_edge_data_read_extract_control_instant (
+		.clock         (clock                   ),
+		.rstn          (rstn_internal           ),
+		.enabled_in    (enabled                 ),
+		.read_data_0_in(read_data_0_in_edge_data),
+		.read_data_1_in(read_data_1_in_edge_data),
+		.edge_data     (edge_data_variable      )
+	);
+
+
+	////////////////////////////////////////////////////////////////////////////
+	//data request read logic
+	////////////////////////////////////////////////////////////////////////////
+
+
+	ReadWriteDataLine read_data_0_in_edge_job      ;
+	ReadWriteDataLine read_data_1_in_edge_job      ;
+	ReadWriteDataLine read_data_0_in_edge_data     ;
+	ReadWriteDataLine read_data_1_in_edge_data     ;
+	EdgeDataRead      edge_data_variable           ;
+	ReadWriteDataLine read_data_0_data_out    [0:1];
+	ReadWriteDataLine read_data_1_data_out    [0:1];
+
+	ReadWriteDataLine read_data_0_data_out_latched[0:1];
+	ReadWriteDataLine read_data_1_data_out_latched[0:1];
+
+	logic read_data_0_data_out_latched_valid[0:1];
+	logic read_data_1_data_out_latched_valid[0:1];
 
 endmodule
