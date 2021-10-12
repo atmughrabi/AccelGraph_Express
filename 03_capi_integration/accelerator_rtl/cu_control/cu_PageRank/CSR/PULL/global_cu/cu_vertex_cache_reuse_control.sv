@@ -8,7 +8,7 @@
 // Author : Abdullah Mughrabi atmughrabi@gmail.com/atmughra@ncsu.edu
 // File   : cu_vertex_cache_reuse_control.sv
 // Create : 2019-09-26 15:18:39
-// Revise : 2021-10-11 06:48:11
+// Revise : 2021-10-11 21:12:14
 // Editor : sublime text4, tab size (4)
 // -----------------------------------------------------------------------------
 
@@ -24,19 +24,19 @@ module cu_vertex_cache_reuse_control #(
 	parameter NUM_GRAPH_CU      = NUM_GRAPH_CU_GLOBAL ,
 	parameter NUM_VERTEX_CU     = NUM_VERTEX_CU_GLOBAL
 ) (
-	input  logic              clock                       , // Clock
-	input  logic              rstn_in                     ,
-	input  logic              enabled_in                  ,
-	input  WEDInterface       wed_request_in              ,
-	input  ResponseBufferLine read_response_in            ,
-	input  ReadWriteDataLine  read_data_0_in              ,
-	input  ReadWriteDataLine  read_data_1_in              ,
-	input  BufferStatus       read_buffer_status          ,
-	input  cu_configure_type  cu_configure                ,
-	input  CommandBufferLine  read_command_in             ,
-	output CommandBufferLine  read_command_out            ,
-	output ResponseBufferLine read_response_out           ,
-	output ReadWriteDataLine  read_data_0_out             ,
+	input  logic              clock             , // Clock
+	input  logic              rstn_in           ,
+	input  logic              enabled_in        ,
+	input  WEDInterface       wed_request_in    ,
+	input  ResponseBufferLine read_response_in  ,
+	input  ReadWriteDataLine  read_data_0_in    ,
+	input  ReadWriteDataLine  read_data_1_in    ,
+	input  BufferStatus       read_buffer_status,
+	input  cu_configure_type  cu_configure      ,
+	input  CommandBufferLine  read_command_in   ,
+	output CommandBufferLine  read_command_out  ,
+	output ResponseBufferLine read_response_out ,
+	output ReadWriteDataLine  read_data_0_out   ,
 	output ReadWriteDataLine  read_data_1_out
 );
 
@@ -142,16 +142,16 @@ module cu_vertex_cache_reuse_control #(
 
 	always_ff @(posedge clock or negedge rstn_internal) begin
 		if(~rstn_internal) begin
-			read_command_out.valid <= 0;
-			read_data_0_out.valid  <= 0;
-			read_data_1_out.valid  <= 0;
-			read_response_out.valid  <= 0;
+			read_command_out.valid  <= 0;
+			read_data_0_out.valid   <= 0;
+			read_data_1_out.valid   <= 0;
+			read_response_out.valid <= 0;
 		end else begin
 			if(enabled)begin
-				read_command_out.valid <= read_command_out_latched.valid;
-				read_data_0_out.valid  <= read_data_0_out_latched.valid;
-				read_data_1_out.valid  <= read_data_1_out_latched.valid;
-				read_response_out.valid  <= read_response_out_latched.valid;
+				read_command_out.valid  <= read_command_out_latched.valid;
+				read_data_0_out.valid   <= read_data_0_out_latched.valid;
+				read_data_1_out.valid   <= read_data_1_out_latched.valid;
+				read_response_out.valid <= read_response_out_latched.valid;
 			end
 		end
 	end
@@ -178,9 +178,9 @@ module cu_vertex_cache_reuse_control #(
 
 	always_ff @(posedge clock or negedge rstn_internal) begin
 		if(~rstn_internal) begin
-			cache_miss <= 0;
+			cache_miss <= 1;
 		end else begin
-			cache_miss <= 0;
+			cache_miss <= 1;
 		end
 	end
 
@@ -191,10 +191,10 @@ module cu_vertex_cache_reuse_control #(
 			read_response_out_latched.valid <= 0;
 		end else begin
 			if(enabled)begin
-			read_data_0_out_latched.valid   <= read_data_0_in_latched.valid ;
-			read_data_1_out_latched.valid   <= read_data_1_in_latched.valid ;
-			read_response_out_latched.valid <= read_response_in_latched.valid;
-		end
+				read_data_0_out_latched.valid   <= read_data_0_in_latched.valid ;
+				read_data_1_out_latched.valid   <= read_data_1_in_latched.valid ;
+				read_response_out_latched.valid <= read_response_in_latched.valid;
+			end
 		end
 	end
 
@@ -212,10 +212,12 @@ module cu_vertex_cache_reuse_control #(
 
 	always_ff @(posedge clock or negedge rstn_internal) begin
 		if(~rstn_internal) begin
-			read_command_out_latched <= 0;
+			read_command_out_latched.valid <= 0;
 		end else begin
 			if(read_command_in_latched.valid & cache_miss & enabled)begin
 				read_command_out_latched.valid <= read_command_in_latched.valid;
+			end else begin
+				read_command_out_latched.valid <= 0;
 			end
 		end
 	end
