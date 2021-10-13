@@ -8,7 +8,7 @@
 // Author : Abdullah Mughrabi atmughrabi@gmail.com/atmughra@ncsu.edu
 // File   : cu_vertex_cache_reuse_control.sv
 // Create : 2019-09-26 15:18:39
-// Revise : 2021-10-11 22:56:17
+// Revise : 2021-10-12 18:46:14
 // Editor : sublime text4, tab size (4)
 // -----------------------------------------------------------------------------
 
@@ -70,6 +70,20 @@ module cu_vertex_cache_reuse_control #(
 ////////////////////////////////////////////////////////////////////////////
 
 	logic cache_miss;
+
+	ReadWriteDataLine read_data_0_in_edge_job      ;
+	ReadWriteDataLine read_data_1_in_edge_job      ;
+	ReadWriteDataLine read_data_0_in_edge_data     ;
+	ReadWriteDataLine read_data_1_in_edge_data     ;
+	EdgeDataRead      edge_data_variable           ;
+	ReadWriteDataLine read_data_0_data_out    [0:1];
+	ReadWriteDataLine read_data_1_data_out    [0:1];
+
+	ReadWriteDataLine read_data_0_data_out_latched[0:1];
+	ReadWriteDataLine read_data_1_data_out_latched[0:1];
+
+	logic read_data_0_data_out_latched_valid[0:1];
+	logic read_data_1_data_out_latched_valid[0:1];
 
 ////////////////////////////////////////////////////////////////////////////
 // logic
@@ -251,8 +265,8 @@ module cu_vertex_cache_reuse_control #(
 		.data_out_valid(read_data_0_data_out_latched_valid             )
 	);
 
-	always_ff @(posedge clock or negedge rstn) begin
-		if(~rstn) begin
+	always_ff @(posedge clock or negedge rstn_internal) begin
+		if(~rstn_internal) begin
 			read_data_0_data_out[0].valid <= 0;
 			read_data_0_data_out[1].valid <= 0;
 			read_data_0_data_out[0].payload <= 0;
@@ -281,8 +295,8 @@ module cu_vertex_cache_reuse_control #(
 		.data_out_valid(read_data_1_data_out_latched_valid             )
 	);
 
-	always_ff @(posedge clock or negedge rstn) begin
-		if(~rstn) begin
+	always_ff @(posedge clock or negedge rstn_internal) begin
+		if(~rstn_internal) begin
 			read_data_1_data_out[0].valid <=0;
 			read_data_1_data_out[1].valid <= 0;
 			read_data_1_data_out[0].payload <= 0;
@@ -317,18 +331,6 @@ module cu_vertex_cache_reuse_control #(
 	////////////////////////////////////////////////////////////////////////////
 
 
-	ReadWriteDataLine read_data_0_in_edge_job      ;
-	ReadWriteDataLine read_data_1_in_edge_job      ;
-	ReadWriteDataLine read_data_0_in_edge_data     ;
-	ReadWriteDataLine read_data_1_in_edge_data     ;
-	EdgeDataRead      edge_data_variable           ;
-	ReadWriteDataLine read_data_0_data_out    [0:1];
-	ReadWriteDataLine read_data_1_data_out    [0:1];
 
-	ReadWriteDataLine read_data_0_data_out_latched[0:1];
-	ReadWriteDataLine read_data_1_data_out_latched[0:1];
-
-	logic read_data_0_data_out_latched_valid[0:1];
-	logic read_data_1_data_out_latched_valid[0:1];
 
 endmodule
