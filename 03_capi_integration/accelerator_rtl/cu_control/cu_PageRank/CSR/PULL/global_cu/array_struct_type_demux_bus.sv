@@ -3,13 +3,13 @@
 //		"ACCEL-GRAPH Shared Memory Accelerator Project"
 //
 // -----------------------------------------------------------------------------
-// Copyright (c) 2014-2020 All rights reserved
+// Copyright (c) 2014-2021 All rights reserved
 // -----------------------------------------------------------------------------
 // Author : Abdullah Mughrabi atmughrabi@gmail.com/atmughra@ncsu.edu
 // File   : array_struct_type_demux_bus.sv
 // Create : 2020-02-21 22:35:40
-// Revise : 2020-03-13 02:26:54
-// Editor : sublime text3, tab size (4)
+// Revise : 2021-10-18 18:27:16
+// Editor : sublime text4, tab size (4)
 // -----------------------------------------------------------------------------
 
 import CU_PKG::*;

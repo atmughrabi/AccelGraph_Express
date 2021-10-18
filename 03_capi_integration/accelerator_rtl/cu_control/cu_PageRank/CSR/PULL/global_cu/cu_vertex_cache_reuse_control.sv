@@ -8,7 +8,7 @@
 // Author : Abdullah Mughrabi atmughrabi@gmail.com/atmughra@ncsu.edu
 // File   : cu_vertex_cache_reuse_control.sv
 // Create : 2019-09-26 15:18:39
-// Revise : 2021-10-13 00:40:43
+// Revise : 2021-10-18 18:28:53
 // Editor : sublime text4, tab size (4)
 // -----------------------------------------------------------------------------
 
@@ -89,8 +89,9 @@ module cu_vertex_cache_reuse_control #(
 	CommandBufferLine read_command_out_edge_data;
 	CommandBufferLine read_command_out_job_data ;
 
+	CommandBufferLine read_command_out_latched_full   [0:1];
 	CommandBufferLine read_command_out_latched_payload[0:1];
-	CommandBufferLine read_command_out_latched_valid[0:1] ;
+	logic             read_command_out_latched_valid  [0:1];
 
 ////////////////////////////////////////////////////////////////////////////
 // logic
@@ -259,10 +260,10 @@ module cu_vertex_cache_reuse_control #(
 //read data request logic - input
 ////////////////////////////////////////////////////////////////////////////
 
-	array_struct_type_filter_demux_bus #(
+	array_struct_type_filter_command_demux_bus #(
 		.DATA_WIDTH($bits(ReadWriteDataLine)),
 		.BUS_WIDTH (2                       )
-	) read_data_0_array_struct_type_demux_bus_instant (
+	) read_data_0_array_struct_type_filter_command_demux_bus_instant (
 		.clock         (clock                                          ),
 		.rstn          (rstn_internal                                  ),
 		.sel_in        (read_data_0_in_latched.payload.cmd.array_struct),
@@ -289,10 +290,10 @@ module cu_vertex_cache_reuse_control #(
 	assign read_data_0_in_edge_job  = read_data_0_data_out[0];
 	assign read_data_0_in_edge_data = read_data_0_data_out[1];
 
-	array_struct_type_filter_demux_bus #(
+	array_struct_type_filter_command_demux_bus #(
 		.DATA_WIDTH($bits(ReadWriteDataLine)),
 		.BUS_WIDTH (2                       )
-	) read_data_1_array_struct_type_demux_bus_instant (
+	) read_data_1_array_struct_type_filter_command_demux_bus_instant (
 		.clock         (clock                                          ),
 		.rstn          (rstn_internal                                  ),
 		.sel_in        (read_data_1_in_latched.payload.cmd.array_struct),
@@ -336,39 +337,35 @@ module cu_vertex_cache_reuse_control #(
 	//read command request logic - input
 	////////////////////////////////////////////////////////////////////////////
 
-
-	CommandBufferLine read_command_out_edge_data;
-	CommandBufferLine read_command_out_job_data ;
-
-	CommandBufferLine read_command_out_latched_payload[0:1];
-	CommandBufferLine read_command_out_latched_valid[0:1] ;
-
-
-	array_struct_type_filter_demux_bus #(
+	array_struct_type_filter_command_demux_bus #(
 		.DATA_WIDTH($bits(CommandBufferLine)),
 		.BUS_WIDTH (2                       )
-	) read_data_0_array_struct_type_demux_bus_instant (
-		.clock         (clock                                          ),
-		.rstn          (rstn_internal                                  ),
-		.sel_in        (read_data_0_in_latched.payload.cmd.array_struct),
-		.data_in       (read_data_0_in_latched                         ),
-		.data_in_valid (read_data_0_in_latched.valid                   ),
-		.data_out      (read_data_0_data_out_latched                   ),
-		.data_out_valid(read_data_0_data_out_latched_valid             )
+	) array_struct_type_filter_command_demux_bus_instant (
+		.clock         (clock                                           ),
+		.rstn          (rstn_internal                                   ),
+		.sel_in        (read_command_in_latched.payload.cmd.array_struct),
+		.data_in       (read_command_in_latched                         ),
+		.data_in_valid (read_command_in_latched.valid                   ),
+		.data_out      (read_command_out_latched_payload                ),
+		.data_out_valid(read_command_out_latched_valid                  )
 	);
 
 	always_ff @(posedge clock or negedge rstn_internal) begin
 		if(~rstn_internal) begin
-			read_data_0_data_out[0].valid <= 0;
-			read_data_0_data_out[1].valid <= 0;
+			read_command_out_latched_full[0].valid <= 0;
+			read_command_out_latched_full[1].valid <= 0;
+			read_command_out_latched_full[0].payload <= 0;
+			read_command_out_latched_full[1].payload <= 0;
 		end else begin
-			read_data_0_data_out[0].valid <= read_data_0_data_out_latched_valid[0];
-			read_data_0_data_out[1].valid <= read_data_0_data_out_latched_valid[1];
+			read_command_out_latched_full[0].valid <= read_data_0_data_out_latched_valid[0];
+			read_command_out_latched_full[1].valid <= read_data_0_data_out_latched_valid[1];
+			read_command_out_latched_full[0].payload <= read_command_out_latched_payload[0];
+			read_command_out_latched_full[1].payload <= read_command_out_latched_payload[1];
 		end
 	end
 
-	assign read_command_out_job_data  = read_data_0_data_out[0];
-	assign read_command_out_edge_data = read_data_0_data_out[1];
+	assign read_command_out_job_data  = read_command_out_latched_full[0];
+	assign read_command_out_edge_data = read_command_out_latched_full[1];
 
 
 

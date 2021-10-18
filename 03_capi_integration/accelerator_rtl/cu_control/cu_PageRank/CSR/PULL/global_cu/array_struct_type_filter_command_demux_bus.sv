@@ -6,15 +6,15 @@
 // Copyright (c) 2014-2021 All rights reserved
 // -----------------------------------------------------------------------------
 // Author : Abdullah Mughrabi atmughrabi@gmail.com/atmughra@ncsu.edu
-// File   : array_struct_type_demux_filter_bus.sv
-// Create : 2020-02-21 22:35:40
-// Revise : 2021-10-13 00:38:44
+// File   : array_struct_type_filter_command_demux_bus.sv
+// Create : 2021-10-18 17:59:39
+// Revise : 2021-10-18 18:27:09
 // Editor : sublime text4, tab size (4)
 // -----------------------------------------------------------------------------
 
 import CU_PKG::*;
 
-module array_struct_type_filter_demux_bus #(
+module array_struct_type_filter_command_demux_bus #(
 	parameter DATA_WIDTH = 32,
 	parameter BUS_WIDTH  = 2
 ) (
