@@ -8,7 +8,7 @@
 // Author : Abdullah Mughrabi atmughrabi@gmail.com/atmughra@ncsu.edu
 // File   : cu_vertex_cache_reuse_control.sv
 // Create : 2019-09-26 15:18:39
-// Revise : 2021-10-18 18:28:53
+// Revise : 2021-10-18 18:55:10
 // Editor : sublime text4, tab size (4)
 // -----------------------------------------------------------------------------
 
@@ -357,8 +357,8 @@ module cu_vertex_cache_reuse_control #(
 			read_command_out_latched_full[0].payload <= 0;
 			read_command_out_latched_full[1].payload <= 0;
 		end else begin
-			read_command_out_latched_full[0].valid <= read_data_0_data_out_latched_valid[0];
-			read_command_out_latched_full[1].valid <= read_data_0_data_out_latched_valid[1];
+			read_command_out_latched_full[0].valid <= read_command_out_latched_valid[0];
+			read_command_out_latched_full[1].valid <= read_command_out_latched_valid[1];
 			read_command_out_latched_full[0].payload <= read_command_out_latched_payload[0];
 			read_command_out_latched_full[1].payload <= read_command_out_latched_payload[1];
 		end
