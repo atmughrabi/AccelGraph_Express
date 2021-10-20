@@ -8,7 +8,7 @@
 // Author : Abdullah Mughrabi atmughrabi@gmail.com/atmughra@ncsu.edu
 // File   : cu_vertex_cache_reuse_control.sv
 // Create : 2019-09-26 15:18:39
-// Revise : 2021-10-19 20:30:34
+// Revise : 2021-10-19 21:02:17
 // Editor : sublime text4, tab size (4)
 // -----------------------------------------------------------------------------
 
@@ -394,13 +394,13 @@ module cu_vertex_cache_reuse_control #(
 	assign command_buffer_status_1 = command_buffer_status[1];
 
 
-	assign requests[1] = ~command_buffer_status[0].empty && ~read_buffer_status.alfull;
-	assign requests[2] = ~command_buffer_status[1].empty && ~read_buffer_status.alfull;
-	assign requests[0] = 0;
+	assign requests[0] = ~command_buffer_status[0].empty && ~read_buffer_status.alfull;
+	assign requests[1] = ~command_buffer_status[1].empty && ~read_buffer_status.alfull;
+	assign requests[2] = 0;
 
-	assign submit[1] = command_buffer_in[0].valid;
-	assign submit[2] = command_buffer_in[1].valid;
-	assign submit[0] = 0;
+	assign submit[0] = command_buffer_in[0].valid;
+	assign submit[1] = command_buffer_in[1].valid;
+	assign submit[2] = 0;
 
 	assign command_buffer_in[2] = 0;
 
@@ -408,6 +408,24 @@ module cu_vertex_cache_reuse_control #(
 		.WIDTH($bits(CommandBufferLine)),
 		.DEPTH(READ_CMD_BUFFER_SIZE    )
 	) read_command_out_job_fifo_instant (
+		.clock   (clock                                 ),
+		.rstn    (rstn_internal                         ),
+		
+		.push    (read_command_out_latched_full[0].valid),
+		.data_in (read_command_out_latched_full[0]      ),
+		.full    (command_buffer_status[0].full         ),
+		.alFull  (command_buffer_status[0].alfull       ),
+		
+		.pop     (ready[0]                              ),
+		.valid   (command_buffer_status[0].valid        ),
+		.data_out(command_buffer_in[0]                  ),
+		.empty   (command_buffer_status[0].empty        )
+	);
+
+	fifo #(
+		.WIDTH($bits(CommandBufferLine)),
+		.DEPTH(READ_CMD_BUFFER_SIZE    )
+	) read_command_out_edge_data_fifo_instant (
 		.clock   (clock                                 ),
 		.rstn    (rstn_internal                         ),
 		
@@ -420,24 +438,6 @@ module cu_vertex_cache_reuse_control #(
 		.valid   (command_buffer_status[1].valid        ),
 		.data_out(command_buffer_in[1]                  ),
 		.empty   (command_buffer_status[1].empty        )
-	);
-
-	fifo #(
-		.WIDTH($bits(CommandBufferLine)),
-		.DEPTH(READ_CMD_BUFFER_SIZE    )
-	) read_command_out_edge_data_fifo_instant (
-		.clock   (clock                                 ),
-		.rstn    (rstn_internal                         ),
-		
-		.push    (read_command_out_latched_full[2].valid),
-		.data_in (read_command_out_latched_full[2]      ),
-		.full    (command_buffer_status[2].full         ),
-		.alFull  (command_buffer_status[2].alfull       ),
-		
-		.pop     (ready[2]                              ),
-		.valid   (command_buffer_status[2].valid        ),
-		.data_out(command_buffer_in[2]                  ),
-		.empty   (command_buffer_status[2].empty        )
 	);
 
 	round_robin_priority_arbiter_N_input_1_ouput #(
