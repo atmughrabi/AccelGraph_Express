@@ -8,7 +8,7 @@
 // Author : Abdullah Mughrabi atmughrabi@gmail.com/atmughra@ncsu.edu
 // File   : cu_vertex_cache_reuse_control.sv
 // Create : 2019-09-26 15:18:39
-// Revise : 2021-10-20 04:05:23
+// Revise : 2021-10-20 19:38:57
 // Editor : sublime text4, tab size (4)
 // -----------------------------------------------------------------------------
 
@@ -71,13 +71,17 @@ module cu_vertex_cache_reuse_control #(
 
 	logic cache_miss;
 
-	ReadWriteDataLine read_data_0_in_edge_job      ;
-	ReadWriteDataLine read_data_1_in_edge_job      ;
-	ReadWriteDataLine read_data_0_in_edge_data     ;
-	ReadWriteDataLine read_data_1_in_edge_data     ;
-	EdgeDataRead      edge_data_variable           ;
-	ReadWriteDataLine read_data_0_data_out    [0:1];
-	ReadWriteDataLine read_data_1_data_out    [0:1];
+	ReadWriteDataLine read_data_0_in_edge_job;
+	ReadWriteDataLine read_data_1_in_edge_job;
+
+	ReadWriteDataLine  read_data_0_in_edge_data   ;
+	ReadWriteDataLine  read_data_1_in_edge_data   ;
+	ReadWriteDataLine  read_data_0_out_edge_data  ;
+	ReadWriteDataLine  read_data_1_out_edge_data  ;
+	ResponseBufferLine read_response_out_edge_data;
+
+	ReadWriteDataLine read_data_0_data_out[0:1];
+	ReadWriteDataLine read_data_1_data_out[0:1];
 
 	ReadWriteDataLine read_data_0_data_out_latched[0:1];
 	ReadWriteDataLine read_data_1_data_out_latched[0:1];
@@ -85,6 +89,7 @@ module cu_vertex_cache_reuse_control #(
 	logic read_data_0_data_out_latched_valid[0:1];
 	logic read_data_1_data_out_latched_valid[0:1];
 
+	CommandBufferLine read_command_out_cache_full          ;
 	CommandBufferLine read_command_out_latched_full   [0:1];
 	CommandBufferLine read_command_out_latched_payload[0:1];
 	logic             read_command_out_latched_valid  [0:1];
@@ -334,19 +339,6 @@ module cu_vertex_cache_reuse_control #(
 	assign read_data_1_in_edge_data = read_data_1_data_out[1];
 
 	////////////////////////////////////////////////////////////////////////////
-	//data request read logic extract single edgedata from cacheline
-	////////////////////////////////////////////////////////////////////////////
-
-	cu_edge_data_read_extract_control cu_edge_data_read_extract_control_instant (
-		.clock         (clock                   ),
-		.rstn          (rstn_internal           ),
-		.enabled_in    (enabled                 ),
-		.read_data_0_in(read_data_0_in_edge_data),
-		.read_data_1_in(read_data_1_in_edge_data),
-		.edge_data     (edge_data_variable      )
-	);
-
-	////////////////////////////////////////////////////////////////////////////
 	//read command request logic - input
 	////////////////////////////////////////////////////////////////////////////
 
@@ -384,8 +376,8 @@ module cu_vertex_cache_reuse_control #(
 	assign command_buffer_in_0 = command_buffer_in[0];
 	assign command_buffer_in_1 = command_buffer_in[1];
 
-	assign requests[0] = ~command_buffer_status[0].empty && ~read_buffer_status.alfull;
-	assign requests[1] = ~command_buffer_status[1].empty && ~read_buffer_status.alfull;
+	assign requests[0] = ~command_buffer_status[0].empty && ~read_buffer_status_latched.alfull;
+	assign requests[1] = ~command_buffer_status[1].empty && ~read_buffer_status_latched.alfull;
 
 	assign submit[0] = command_buffer_in[0].valid;
 	assign submit[1] = command_buffer_in[1].valid;
@@ -412,18 +404,18 @@ module cu_vertex_cache_reuse_control #(
 		.WIDTH($bits(CommandBufferLine)),
 		.DEPTH(READ_CMD_BUFFER_SIZE    )
 	) read_command_out_edge_data_fifo_instant (
-		.clock   (clock                                 ),
-		.rstn    (rstn_internal                         ),
+		.clock   (clock                            ),
+		.rstn    (rstn_internal                    ),
 		
-		.push    (read_command_out_latched_full[1].valid),
-		.data_in (read_command_out_latched_full[1]      ),
-		.full    (command_buffer_status[1].full         ),
-		.alFull  (command_buffer_status[1].alfull       ),
+		.push    (read_command_out_cache_full.valid),
+		.data_in (read_command_out_cache_full      ),
+		.full    (command_buffer_status[1].full    ),
+		.alFull  (command_buffer_status[1].alfull  ),
 		
-		.pop     (ready[1]                              ),
-		.valid   (command_buffer_status[1].valid        ),
-		.data_out(command_buffer_in[1]                  ),
-		.empty   (command_buffer_status[1].empty        )
+		.pop     (ready[1]                         ),
+		.valid   (command_buffer_status[1].valid   ),
+		.data_out(command_buffer_in[1]             ),
+		.empty   (command_buffer_status[1].empty   )
 	);
 
 	round_robin_priority_arbiter_N_input_1_ouput #(
@@ -462,8 +454,30 @@ module cu_vertex_cache_reuse_control #(
 			command_arbiter_out.payload <= command_arbiter_out_round_robin.payload ;
 		end
 	end
+
 	////////////////////////////////////////////////////////////////////////////
 	// Caching logic
 	////////////////////////////////////////////////////////////////////////////
+
+	cu_vertex_cache_resue_module #(
+		.NUM_READ_REQUESTS(NUM_READ_REQUESTS),
+		.NUM_GRAPH_CU     (NUM_GRAPH_CU     ),
+		.NUM_VERTEX_CU    (NUM_VERTEX_CU    )
+	) cu_vertex_cache_resue_module_instant (
+		.clock             (clock                           ),
+		.rstn_in           (rstn_internal                   ),
+		.enabled_in        (enabled                         ),
+		.wed_request_in    (wed_request_in_latched          ),
+		.read_response_in  (read_response_in_latched        ),
+		.read_data_0_in    (read_data_0_in_edge_data        ),
+		.read_data_1_in    (read_data_1_in_edge_data        ),
+		.read_buffer_status(command_buffer_status[1]        ),
+		.cu_configure      (cu_configure_latched            ),
+		.read_command_in   (read_command_out_latched_full[1]),
+		.read_command_out  (read_command_out_cache_full     ),
+		.read_response_out (read_response_out_edge_data     ),
+		.read_data_0_out   (read_data_0_out_edge_data       ),
+		.read_data_1_out   (read_data_1_out_edge_data       )
+	);
 
 endmodule

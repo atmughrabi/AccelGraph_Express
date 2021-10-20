@@ -156,6 +156,7 @@ proc r  {} {
         vlog -quiet $cu_control_dir/accelerator_rtl/cu_control/$graph_algorithm/$data_structure/$direction/global_cu/demux_bus.sv
         vlog -quiet $cu_control_dir/accelerator_rtl/cu_control/$graph_algorithm/$data_structure/$direction/global_cu/array_struct_type_demux_bus.sv
         vlog -quiet $cu_control_dir/accelerator_rtl/cu_control/$graph_algorithm/$data_structure/$direction/global_cu/array_struct_type_filter_command_demux_bus.sv
+        vlog -quiet $cu_control_dir/accelerator_rtl/cu_control/$graph_algorithm/$data_structure/$direction/global_cu/cu_vertex_cache_resue_module.sv
         vlog -quiet $cu_control_dir/accelerator_rtl/cu_control/$graph_algorithm/$data_structure/$direction/$cu_precision/cu/cu_sum_kernel_control.sv
         vlog -quiet $cu_control_dir/accelerator_rtl/cu_control/$graph_algorithm/$data_structure/$direction/global_cu/cu_edge_data_write_command_control.sv
         vlog -quiet $cu_control_dir/accelerator_rtl/cu_control/$graph_algorithm/$data_structure/$direction/global_cu/cu_edge_data_read_extract_control.sv
