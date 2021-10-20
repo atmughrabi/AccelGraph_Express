@@ -3,13 +3,13 @@
 //		"ACCEL-GRAPH Shared Memory Accelerator Project"
 //
 // -----------------------------------------------------------------------------
-// Copyright (c) 2014-2019 All rights reserved
+// Copyright (c) 2014-2021 All rights reserved
 // -----------------------------------------------------------------------------
 // Author : Abdullah Mughrabi atmughrabi@gmail.com/atmughra@ncsu.edu
-// File   : globals_pkg.sv
+// File   : globals_cu_pkg.sv
 // Create : 2019-09-26 15:20:15
-// Revise : 2019-11-08 07:28:25
-// Editor : sublime text3, tab size (4)
+// Revise : 2021-10-19 18:43:50
+// Editor : sublime text4, tab size (4)
 // -----------------------------------------------------------------------------
 
 package GLOBALS_CU_PKG;
@@ -28,8 +28,8 @@ package GLOBALS_CU_PKG;
 // TOTAL CUS = NUM_GRAPH_CU_GLOBAL X NUM_VERTEX_CU_GLOBAL
 ////////////////////////////////////////////////////////////////////////////
 
-	parameter NUM_GRAPH_CU_GLOBAL  = 5;
-	parameter NUM_VERTEX_CU_GLOBAL = 4;
+	parameter NUM_GRAPH_CU_GLOBAL  = 2;
+	parameter NUM_VERTEX_CU_GLOBAL = 2;
 
 	parameter CU_VERTEX_JOB_BUFFER_SIZE = 64;
 	parameter CU_EDGE_JOB_BUFFER_SIZE   = 64;

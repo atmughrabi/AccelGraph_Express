@@ -8,7 +8,7 @@
 // Author : Abdullah Mughrabi atmughrabi@gmail.com/atmughra@ncsu.edu
 // File   : cu_vertex_cache_reuse_control.sv
 // Create : 2019-09-26 15:18:39
-// Revise : 2021-10-18 18:55:10
+// Revise : 2021-10-19 20:30:34
 // Editor : sublime text4, tab size (4)
 // -----------------------------------------------------------------------------
 
@@ -20,7 +20,7 @@ import AFU_PKG::*;
 import CU_PKG::*;
 
 module cu_vertex_cache_reuse_control #(
-	parameter NUM_READ_REQUESTS = 2                   ,
+	parameter NUM_READ_REQUESTS = 3                   ,
 	parameter NUM_GRAPH_CU      = NUM_GRAPH_CU_GLOBAL ,
 	parameter NUM_VERTEX_CU     = NUM_VERTEX_CU_GLOBAL
 ) (
@@ -85,13 +85,26 @@ module cu_vertex_cache_reuse_control #(
 	logic read_data_0_data_out_latched_valid[0:1];
 	logic read_data_1_data_out_latched_valid[0:1];
 
-
-	CommandBufferLine read_command_out_edge_data;
-	CommandBufferLine read_command_out_job_data ;
-
 	CommandBufferLine read_command_out_latched_full   [0:1];
 	CommandBufferLine read_command_out_latched_payload[0:1];
 	logic             read_command_out_latched_valid  [0:1];
+
+	////////////////////////////////////////////////////////////////////////////
+	// Read Command Arbitration
+	////////////////////////////////////////////////////////////////////////////
+
+	logic [NUM_READ_REQUESTS-1:0] requests;
+	logic [NUM_READ_REQUESTS-1:0] submit  ;
+
+	logic [NUM_READ_REQUESTS-1:0] ready                       ;
+	logic [NUM_READ_REQUESTS-1:0] ready_round_robin           ;
+	logic                         round_robin_priority_enabled;
+
+	BufferStatus      command_buffer_status          [NUM_READ_REQUESTS-1:0];
+	CommandBufferLine command_buffer_in              [NUM_READ_REQUESTS-1:0];
+	CommandBufferLine command_arbiter_out_round_robin                       ;
+	CommandBufferLine command_arbiter_out                                   ;
+
 
 ////////////////////////////////////////////////////////////////////////////
 // logic
@@ -364,9 +377,107 @@ module cu_vertex_cache_reuse_control #(
 		end
 	end
 
-	assign read_command_out_job_data  = read_command_out_latched_full[0];
-	assign read_command_out_edge_data = read_command_out_latched_full[1];
+	////////////////////////////////////////////////////////////////////////////
+	// Read Command Arbitration
+	////////////////////////////////////////////////////////////////////////////
+
+	BufferStatus      command_buffer_status_0;
+	CommandBufferLine command_buffer_in_0;
+
+	BufferStatus      command_buffer_status_1;
+	CommandBufferLine command_buffer_in_1;
+
+	assign command_buffer_in_0 = command_buffer_in[0];
+	assign command_buffer_in_1 = command_buffer_in[1];
+
+	assign command_buffer_status_0 = command_buffer_status[0];
+	assign command_buffer_status_1 = command_buffer_status[1];
 
 
+	assign requests[1] = ~command_buffer_status[0].empty && ~read_buffer_status.alfull;
+	assign requests[2] = ~command_buffer_status[1].empty && ~read_buffer_status.alfull;
+	assign requests[0] = 0;
+
+	assign submit[1] = command_buffer_in[0].valid;
+	assign submit[2] = command_buffer_in[1].valid;
+	assign submit[0] = 0;
+
+	assign command_buffer_in[2] = 0;
+
+	fifo #(
+		.WIDTH($bits(CommandBufferLine)),
+		.DEPTH(READ_CMD_BUFFER_SIZE    )
+	) read_command_out_job_fifo_instant (
+		.clock   (clock                                 ),
+		.rstn    (rstn_internal                         ),
+		
+		.push    (read_command_out_latched_full[1].valid),
+		.data_in (read_command_out_latched_full[1]      ),
+		.full    (command_buffer_status[1].full         ),
+		.alFull  (command_buffer_status[1].alfull       ),
+		
+		.pop     (ready[1]                              ),
+		.valid   (command_buffer_status[1].valid        ),
+		.data_out(command_buffer_in[1]                  ),
+		.empty   (command_buffer_status[1].empty        )
+	);
+
+	fifo #(
+		.WIDTH($bits(CommandBufferLine)),
+		.DEPTH(READ_CMD_BUFFER_SIZE    )
+	) read_command_out_edge_data_fifo_instant (
+		.clock   (clock                                 ),
+		.rstn    (rstn_internal                         ),
+		
+		.push    (read_command_out_latched_full[2].valid),
+		.data_in (read_command_out_latched_full[2]      ),
+		.full    (command_buffer_status[2].full         ),
+		.alFull  (command_buffer_status[2].alfull       ),
+		
+		.pop     (ready[2]                              ),
+		.valid   (command_buffer_status[2].valid        ),
+		.data_out(command_buffer_in[2]                  ),
+		.empty   (command_buffer_status[2].empty        )
+	);
+
+	round_robin_priority_arbiter_N_input_1_ouput #(
+		.NUM_REQUESTS(NUM_READ_REQUESTS       ),
+		.WIDTH       ($bits(CommandBufferLine))
+	) round_robin_priority_arbiter_N_input_1_ouput_command_buffer_arbiter_instant (
+		.clock      (clock                          ),
+		.rstn       (rstn_internal                  ),
+		.enabled    (round_robin_priority_enabled   ),
+		.buffer_in  (command_buffer_in              ),
+		.submit     (submit                         ),
+		.requests   (requests                       ),
+		.arbiter_out(command_arbiter_out_round_robin),
+		.ready      (ready_round_robin              )
+	);
+
+
+	always_ff @(posedge clock or negedge rstn_internal) begin
+		if(~rstn_internal) begin
+			command_arbiter_out.valid    <= 0;
+			ready                        <= 0;
+			round_robin_priority_enabled <= 0;
+		end else begin
+			if(enabled)begin
+				command_arbiter_out.valid    <= command_arbiter_out_round_robin.valid;
+				ready                        <= ready_round_robin;
+				round_robin_priority_enabled <= 1;
+			end
+		end
+	end
+
+	always_ff @(posedge clock or negedge rstn_internal) begin
+		if(~rstn_internal) begin
+			command_arbiter_out.payload <= 0;
+		end else begin
+			command_arbiter_out.payload <= command_arbiter_out_round_robin.payload ;
+		end
+	end
+	////////////////////////////////////////////////////////////////////////////
+	// Caching logic
+	////////////////////////////////////////////////////////////////////////////
 
 endmodule
