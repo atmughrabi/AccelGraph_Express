@@ -8,7 +8,7 @@
 // Author : Abdullah Mughrabi atmughrabi@gmail.com/atmughra@ncsu.edu
 // File   : cu_vertex_cache_reuse_control.sv
 // Create : 2019-09-26 15:18:39
-// Revise : 2021-10-19 21:02:17
+// Revise : 2021-10-20 04:05:23
 // Editor : sublime text4, tab size (4)
 // -----------------------------------------------------------------------------
 
@@ -20,7 +20,7 @@ import AFU_PKG::*;
 import CU_PKG::*;
 
 module cu_vertex_cache_reuse_control #(
-	parameter NUM_READ_REQUESTS = 3                   ,
+	parameter NUM_READ_REQUESTS = 4                   ,
 	parameter NUM_GRAPH_CU      = NUM_GRAPH_CU_GLOBAL ,
 	parameter NUM_VERTEX_CU     = NUM_VERTEX_CU_GLOBAL
 ) (
@@ -100,8 +100,8 @@ module cu_vertex_cache_reuse_control #(
 	logic [NUM_READ_REQUESTS-1:0] ready_round_robin           ;
 	logic                         round_robin_priority_enabled;
 
-	BufferStatus      command_buffer_status          [NUM_READ_REQUESTS-1:0];
-	CommandBufferLine command_buffer_in              [NUM_READ_REQUESTS-1:0];
+	BufferStatus      command_buffer_status          [0:NUM_READ_REQUESTS-1];
+	CommandBufferLine command_buffer_in              [0:NUM_READ_REQUESTS-1];
 	CommandBufferLine command_arbiter_out_round_robin                       ;
 	CommandBufferLine command_arbiter_out                                   ;
 
@@ -249,8 +249,8 @@ module cu_vertex_cache_reuse_control #(
 		if(~rstn_internal) begin
 			read_command_out_latched.valid <= 0;
 		end else begin
-			if(read_command_in_latched.valid & cache_miss & enabled)begin
-				read_command_out_latched.valid <= read_command_in_latched.valid;
+			if(command_arbiter_out.valid & cache_miss & enabled)begin
+				read_command_out_latched.valid <= command_arbiter_out.valid;
 			end else begin
 				read_command_out_latched.valid <= 0;
 			end
@@ -261,7 +261,7 @@ module cu_vertex_cache_reuse_control #(
 		if(~rstn_internal) begin
 			read_command_out_latched.payload <= 0;
 		end else begin
-			read_command_out_latched.payload <= read_command_in_latched.payload;
+			read_command_out_latched.payload <= command_arbiter_out.payload;
 		end
 	end
 
@@ -381,28 +381,14 @@ module cu_vertex_cache_reuse_control #(
 	// Read Command Arbitration
 	////////////////////////////////////////////////////////////////////////////
 
-	BufferStatus      command_buffer_status_0;
-	CommandBufferLine command_buffer_in_0;
-
-	BufferStatus      command_buffer_status_1;
-	CommandBufferLine command_buffer_in_1;
-
 	assign command_buffer_in_0 = command_buffer_in[0];
 	assign command_buffer_in_1 = command_buffer_in[1];
 
-	assign command_buffer_status_0 = command_buffer_status[0];
-	assign command_buffer_status_1 = command_buffer_status[1];
-
-
 	assign requests[0] = ~command_buffer_status[0].empty && ~read_buffer_status.alfull;
 	assign requests[1] = ~command_buffer_status[1].empty && ~read_buffer_status.alfull;
-	assign requests[2] = 0;
 
 	assign submit[0] = command_buffer_in[0].valid;
 	assign submit[1] = command_buffer_in[1].valid;
-	assign submit[2] = 0;
-
-	assign command_buffer_in[2] = 0;
 
 	fifo #(
 		.WIDTH($bits(CommandBufferLine)),
