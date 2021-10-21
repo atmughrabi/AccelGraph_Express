@@ -9,7 +9,7 @@
 // Author : Abdullah Mughrabi atmughrabi@gmail.com/atmughra@ncsu.edu
 // File   : cu_control.sv
 // Create : 2021-10-11 06:48:04
-// Revise : 2021-10-20 03:40:44
+// Revise : 2021-10-20 22:22:29
 // Editor : sublime text4, tab size (4)
 // -----------------------------------------------------------------------------
 
@@ -266,10 +266,10 @@ module cu_control #(
 ////////////////////////////////////////////////////////////////////////////
 
 	cu_vertex_cache_reuse_control #(
-		.NUM_READ_REQUESTS(2),
-		.NUM_GRAPH_CU     (NUM_GRAPH_CU     ),
-		.NUM_VERTEX_CU    (NUM_VERTEX_CU    )
-	) inst_cu_vertex_cache_reuse_control (
+		.NUM_READ_REQUESTS(2            ),
+		.NUM_GRAPH_CU     (NUM_GRAPH_CU ),
+		.NUM_VERTEX_CU    (NUM_VERTEX_CU)
+	) cu_vertex_cache_reuse_control_instant (
 		.clock             (clock                    ),
 		.rstn_in           (rstn_internal            ),
 		.enabled_in        (enabled                  ),

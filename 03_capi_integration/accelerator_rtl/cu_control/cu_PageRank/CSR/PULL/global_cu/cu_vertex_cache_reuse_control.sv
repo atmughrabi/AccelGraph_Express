@@ -8,7 +8,7 @@
 // Author : Abdullah Mughrabi atmughrabi@gmail.com/atmughra@ncsu.edu
 // File   : cu_vertex_cache_reuse_control.sv
 // Create : 2019-09-26 15:18:39
-// Revise : 2021-10-20 19:38:57
+// Revise : 2021-10-21 03:27:39
 // Editor : sublime text4, tab size (4)
 // -----------------------------------------------------------------------------
 
@@ -80,6 +80,12 @@ module cu_vertex_cache_reuse_control #(
 	ReadWriteDataLine  read_data_1_out_edge_data  ;
 	ResponseBufferLine read_response_out_edge_data;
 
+	ResponseBufferLine reponse_data_in_edge_job           ;
+	ResponseBufferLine reponse_data_in_edge_data          ;
+	ResponseBufferLine reponse_data_out              [0:1];
+	ResponseBufferLine reponse_data_out_latched      [0:1];
+	logic              reponse_data_out_latched_valid[0:1];
+
 	ReadWriteDataLine read_data_0_data_out[0:1];
 	ReadWriteDataLine read_data_1_data_out[0:1];
 
@@ -94,9 +100,9 @@ module cu_vertex_cache_reuse_control #(
 	CommandBufferLine read_command_out_latched_payload[0:1];
 	logic             read_command_out_latched_valid  [0:1];
 
-	////////////////////////////////////////////////////////////////////////////
-	// Read Command Arbitration
-	////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+// Read Command Arbitration
+////////////////////////////////////////////////////////////////////////////
 
 	logic [NUM_READ_REQUESTS-1:0] requests;
 	logic [NUM_READ_REQUESTS-1:0] submit  ;
@@ -338,9 +344,39 @@ module cu_vertex_cache_reuse_control #(
 	assign read_data_1_in_edge_job  = read_data_1_data_out[0];
 	assign read_data_1_in_edge_data = read_data_1_data_out[1];
 
-	////////////////////////////////////////////////////////////////////////////
-	//read command request logic - input
-	////////////////////////////////////////////////////////////////////////////
+	array_struct_type_filter_command_demux_bus #(
+		.DATA_WIDTH($bits(ResponseBufferLine)),
+		.BUS_WIDTH (2                        )
+	) response_struct_type_filter_demux_bus_instant (
+		.clock         (clock                                            ),
+		.rstn          (rstn_internal                                    ),
+		.sel_in        (read_response_in_latched.payload.cmd.array_struct),
+		.data_in       (read_response_in_latched                         ),
+		.data_in_valid (read_response_in_latched.valid                   ),
+		.data_out      (reponse_data_out_latched                         ),
+		.data_out_valid(reponse_data_out_latched_valid                   )
+	);
+
+	always_ff @(posedge clock or negedge rstn_internal) begin
+		if(~rstn_internal) begin
+			reponse_data_out[0].valid <=0;
+			reponse_data_out[1].valid <= 0;
+			reponse_data_out[0].payload <= 0;
+			reponse_data_out[1].payload <= 0;
+		end else begin
+			reponse_data_out[0].valid <= reponse_data_out_latched_valid[0];
+			reponse_data_out[1].valid <= reponse_data_out_latched_valid[1];
+			reponse_data_out[0].payload <= reponse_data_out_latched[0].payload;
+			reponse_data_out[1].payload <= reponse_data_out_latched[1].payload;
+		end
+	end
+
+	assign reponse_data_in_edge_job  = reponse_data_out[0];
+	assign reponse_data_in_edge_data = reponse_data_out[1];
+
+////////////////////////////////////////////////////////////////////////////
+//read command request logic - input
+////////////////////////////////////////////////////////////////////////////
 
 	array_struct_type_filter_command_demux_bus #(
 		.DATA_WIDTH($bits(CommandBufferLine)),
@@ -369,12 +405,9 @@ module cu_vertex_cache_reuse_control #(
 		end
 	end
 
-	////////////////////////////////////////////////////////////////////////////
-	// Read Command Arbitration
-	////////////////////////////////////////////////////////////////////////////
-
-	assign command_buffer_in_0 = command_buffer_in[0];
-	assign command_buffer_in_1 = command_buffer_in[1];
+////////////////////////////////////////////////////////////////////////////
+// Read Command Arbitration
+////////////////////////////////////////////////////////////////////////////
 
 	assign requests[0] = ~command_buffer_status[0].empty && ~read_buffer_status_latched.alfull;
 	assign requests[1] = ~command_buffer_status[1].empty && ~read_buffer_status_latched.alfull;
@@ -455,9 +488,205 @@ module cu_vertex_cache_reuse_control #(
 		end
 	end
 
-	////////////////////////////////////////////////////////////////////////////
-	// Caching logic
-	////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////
+// Data Buffer Arbitration
+////////////////////////////////////////////////////////////////////////////
+
+	logic [NUM_READ_REQUESTS-1:0] data_0_requests;
+	logic [NUM_READ_REQUESTS-1:0] data_0_submit  ;
+
+	logic [NUM_READ_REQUESTS-1:0] data_0_ready                       ;
+	logic [NUM_READ_REQUESTS-1:0] data_0_ready_round_robin           ;
+	logic                         data_0_round_robin_priority_enabled;
+
+	BufferStatus      data_0_buffer_status          [0:NUM_READ_REQUESTS-1];
+	ReadWriteDataLine data_0_buffer_in              [0:NUM_READ_REQUESTS-1];
+	ReadWriteDataLine data_0_arbiter_out_round_robin                       ;
+	ReadWriteDataLine data_0_arbiter_out                                   ;
+
+	logic [NUM_READ_REQUESTS-1:0] data_1_requests;
+	logic [NUM_READ_REQUESTS-1:0] data_1_submit  ;
+
+	logic [NUM_READ_REQUESTS-1:0] data_1_ready                       ;
+	logic [NUM_READ_REQUESTS-1:0] data_1_ready_round_robin           ;
+	logic                         data_1_round_robin_priority_enabled;
+
+	BufferStatus      data_1_buffer_status          [0:NUM_READ_REQUESTS-1];
+	ReadWriteDataLine data_1_buffer_in              [0:NUM_READ_REQUESTS-1];
+	ReadWriteDataLine data_1_arbiter_out_round_robin                       ;
+	ReadWriteDataLine data_1_arbiter_out                                   ;
+
+////////////////////////////////////////////////////////////////////////////
+// Read Command Arbitration
+////////////////////////////////////////////////////////////////////////////
+
+	assign data_0_requests[0] = ~data_0_buffer_status[0].empty && ~read_buffer_status_latched.alfull;
+	assign data_0_requests[1] = ~data_0_buffer_status[1].empty && ~read_buffer_status_latched.alfull;
+
+	assign data_0_submit[0] = data_0_buffer_in[0].valid;
+	assign data_0_submit[1] = data_0_buffer_in[1].valid;
+
+	fifo #(
+		.WIDTH($bits(ReadWriteDataLine)),
+		.DEPTH(READ_CMD_BUFFER_SIZE    )
+	) read_data_0_out_job_fifo_instant (
+		.clock   (clock                         ),
+		.rstn    (rstn_internal                 ),
+		
+		.push    (read_data_0_in_edge_job.valid ),
+		.data_in (read_data_0_in_edge_job       ),
+		.full    (data_0_buffer_status[0].full  ),
+		.alFull  (data_0_buffer_status[0].alfull),
+		
+		.pop     (data_0_ready[0]               ),
+		.valid   (data_0_buffer_status[0].valid ),
+		.data_out(data_0_buffer_in[0]           ),
+		.empty   (data_0_buffer_status[0].empty )
+	);
+
+	fifo #(
+		.WIDTH($bits(ReadWriteDataLine)),
+		.DEPTH(READ_CMD_BUFFER_SIZE    )
+	) read_data_0_out_edge_data_fifo_instant (
+		.clock   (clock                          ),
+		.rstn    (rstn_internal                  ),
+		
+		.push    (read_data_0_out_edge_data.valid),
+		.data_in (read_data_0_out_edge_data      ),
+		.full    (data_0_buffer_status[1].full   ),
+		.alFull  (data_0_buffer_status[1].alfull ),
+		
+		.pop     (data_0_ready[1]                ),
+		.valid   (data_0_buffer_status[1].valid  ),
+		.data_out(data_0_buffer_in[1]            ),
+		.empty   (data_0_buffer_status[1].empty  )
+	);
+
+	round_robin_priority_arbiter_N_input_1_ouput #(
+		.NUM_REQUESTS(NUM_READ_REQUESTS       ),
+		.WIDTH       ($bits(ReadWriteDataLine))
+	) round_robin_priority_arbiter_N_input_1_ouput_data_buffer_arbiter_instant (
+		.clock      (clock                              ),
+		.rstn       (rstn_internal                      ),
+		.enabled    (data_0_round_robin_priority_enabled),
+		.buffer_in  (data_0_buffer_in                   ),
+		.submit     (data_0_submit                      ),
+		.requests   (data_0_requests                    ),
+		.arbiter_out(data_0_arbiter_out_round_robin     ),
+		.ready      (data_0_ready_round_robin           )
+	);
+
+
+	always_ff @(posedge clock or negedge rstn_internal) begin
+		if(~rstn_internal) begin
+			data_0_arbiter_out.valid            <= 0;
+			data_0_ready                        <= 0;
+			data_0_round_robin_priority_enabled <= 0;
+		end else begin
+			if(enabled)begin
+				data_0_arbiter_out.valid            <= data_0_arbiter_out_round_robin.valid;
+				data_0_ready                        <= data_0_ready_round_robin;
+				data_0_round_robin_priority_enabled <= 1;
+			end
+		end
+	end
+
+	always_ff @(posedge clock or negedge rstn_internal) begin
+		if(~rstn_internal) begin
+			data_0_arbiter_out.payload <= 0;
+		end else begin
+			data_0_arbiter_out.payload <= data_0_arbiter_out_round_robin.payload ;
+		end
+	end
+
+
+////////////////////////////////////////////////////////////////////////////
+// Read Command Arbitration
+////////////////////////////////////////////////////////////////////////////
+
+	assign data_1_requests[0] = ~data_1_buffer_status[0].empty && ~read_buffer_status_latched.alfull;
+	assign data_1_requests[1] = ~data_1_buffer_status[1].empty && ~read_buffer_status_latched.alfull;
+
+	assign data_1_submit[0] = data_1_buffer_in[0].valid;
+	assign data_1_submit[1] = data_1_buffer_in[1].valid;
+
+	fifo #(
+		.WIDTH($bits(ReadWriteDataLine)),
+		.DEPTH(READ_CMD_BUFFER_SIZE    )
+	) read_data_1_out_job_fifo_instant (
+		.clock   (clock                         ),
+		.rstn    (rstn_internal                 ),
+		
+		.push    (read_data_1_in_edge_job.valid ),
+		.data_in (read_data_1_in_edge_job       ),
+		.full    (data_1_buffer_status[0].full  ),
+		.alFull  (data_1_buffer_status[0].alfull),
+		
+		.pop     (data_1_ready[0]               ),
+		.valid   (data_1_buffer_status[0].valid ),
+		.data_out(data_1_buffer_in[0]           ),
+		.empty   (data_1_buffer_status[0].empty )
+	);
+
+	fifo #(
+		.WIDTH($bits(ReadWriteDataLine)),
+		.DEPTH(READ_CMD_BUFFER_SIZE    )
+	) read_data_1_out_edge_data_fifo_instant (
+		.clock   (clock                          ),
+		.rstn    (rstn_internal                  ),
+		
+		.push    (read_data_1_out_edge_data.valid),
+		.data_in (read_data_1_out_edge_data      ),
+		.full    (data_1_buffer_status[1].full   ),
+		.alFull  (data_1_buffer_status[1].alfull ),
+		
+		.pop     (data_1_ready[1]                ),
+		.valid   (data_1_buffer_status[1].valid  ),
+		.data_out(data_1_buffer_in[1]            ),
+		.empty   (data_1_buffer_status[1].empty  )
+	);
+
+	round_robin_priority_arbiter_N_input_1_ouput #(
+		.NUM_REQUESTS(NUM_READ_REQUESTS       ),
+		.WIDTH       ($bits(ReadWriteDataLine))
+	) round_robin_priority_arbiter_N_input_1_ouput_data_1_buffer_arbiter_instant (
+		.clock      (clock                              ),
+		.rstn       (rstn_internal                      ),
+		.enabled    (data_1_round_robin_priority_enabled),
+		.buffer_in  (data_1_buffer_in                   ),
+		.submit     (data_1_submit                      ),
+		.requests   (data_1_requests                    ),
+		.arbiter_out(data_1_arbiter_out_round_robin     ),
+		.ready      (data_1_ready_round_robin           )
+	);
+
+
+	always_ff @(posedge clock or negedge rstn_internal) begin
+		if(~rstn_internal) begin
+			data_1_arbiter_out.valid            <= 0;
+			data_1_ready                        <= 0;
+			data_1_round_robin_priority_enabled <= 0;
+		end else begin
+			if(enabled)begin
+				data_1_arbiter_out.valid            <= data_1_arbiter_out_round_robin.valid;
+				data_1_ready                        <= data_1_ready_round_robin;
+				data_1_round_robin_priority_enabled <= 1;
+			end
+		end
+	end
+
+	always_ff @(posedge clock or negedge rstn_internal) begin
+		if(~rstn_internal) begin
+			data_1_arbiter_out.payload <= 0;
+		end else begin
+			data_1_arbiter_out.payload <= data_1_arbiter_out_round_robin.payload ;
+		end
+	end
+
+////////////////////////////////////////////////////////////////////////////
+// Caching logic
+////////////////////////////////////////////////////////////////////////////
 
 	cu_vertex_cache_resue_module #(
 		.NUM_READ_REQUESTS(NUM_READ_REQUESTS),
@@ -468,7 +697,7 @@ module cu_vertex_cache_reuse_control #(
 		.rstn_in           (rstn_internal                   ),
 		.enabled_in        (enabled                         ),
 		.wed_request_in    (wed_request_in_latched          ),
-		.read_response_in  (read_response_in_latched        ),
+		.read_response_in  (reponse_data_in_edge_data       ),
 		.read_data_0_in    (read_data_0_in_edge_data        ),
 		.read_data_1_in    (read_data_1_in_edge_data        ),
 		.read_buffer_status(command_buffer_status[1]        ),

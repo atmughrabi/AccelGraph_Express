@@ -8,7 +8,7 @@
 // Author : Abdullah Mughrabi atmughrabi@gmail.com/atmughra@ncsu.edu
 // File   : cu_vertex_cache_resue_module.sv
 // Create : 2021-10-20 18:45:25
-// Revise : 2021-10-20 19:46:04
+// Revise : 2021-10-21 02:22:26
 // Editor : sublime text4, tab size (4)
 // -----------------------------------------------------------------------------
 
@@ -210,14 +210,17 @@ module cu_vertex_cache_resue_module #(
 	////////////////////////////////////////////////////////////////////////////
 
 	cu_edge_data_read_extract_control cu_edge_data_read_extract_control_instant (
-		.clock         (clock                   ),
-		.rstn          (rstn_internal           ),
-		.enabled_in    (enabled                 ),
+		.clock         (clock                 ),
+		.rstn          (rstn_internal         ),
+		.enabled_in    (enabled               ),
 		.read_data_0_in(read_data_0_in_latched),
 		.read_data_1_in(read_data_1_in_latched),
-		.edge_data     (edge_data_variable      )
+		.edge_data     (edge_data_variable    )
 	);
 
-	assign read_command_out_latched = read_command_in_latched;
+	assign read_command_out_latched  = read_command_in_latched;
+	assign read_response_out_latched = read_response_in_latched;
+	assign read_data_0_out_latched   = read_data_0_in_latched;
+	assign read_data_1_out_latched   = read_data_1_in_latched;
 
 endmodule
