@@ -9,7 +9,7 @@
 // Author : Abdullah Mughrabi atmughrabi@gmail.com/atmughra@ncsu.edu
 // File   : cu_control.sv
 // Create : 2021-10-11 06:48:04
-// Revise : 2021-10-20 22:22:29
+// Revise : 2021-10-21 11:34:51
 // Editor : sublime text4, tab size (4)
 // -----------------------------------------------------------------------------
 
@@ -270,20 +270,20 @@ module cu_control #(
 		.NUM_GRAPH_CU     (NUM_GRAPH_CU ),
 		.NUM_VERTEX_CU    (NUM_VERTEX_CU)
 	) cu_vertex_cache_reuse_control_instant (
-		.clock             (clock                    ),
-		.rstn_in           (rstn_internal            ),
-		.enabled_in        (enabled                  ),
-		.wed_request_in    (wed_request_in           ),
-		.read_response_in  (read_response_in_latched ),
-		.read_data_0_in    (read_data_0_in_latched   ),
-		.read_data_1_in    (read_data_1_in_latched   ),
-		.read_buffer_status(read_buffer_status       ),
-		.cu_configure      (cu_configure             ),
-		.read_command_in   (read_command_out_internal),
-		.read_command_out  (read_command_out_latched ),
-		.read_response_out (read_response_in_internal),
-		.read_data_0_out   (read_data_0_in_internal  ),
-		.read_data_1_out   (read_data_1_in_internal  )
+		.clock             (clock                     ),
+		.rstn_in           (rstn_internal             ),
+		.enabled_in        (enabled                   ),
+		.wed_request_in    (wed_request_in            ),
+		.read_response_in  (read_response_in_latched  ),
+		.read_data_0_in    (read_data_0_in_latched    ),
+		.read_data_1_in    (read_data_1_in_latched    ),
+		.read_buffer_status(read_buffer_status_latched),
+		.cu_configure      (cu_configure_latched      ),
+		.read_command_in   (read_command_out_internal ),
+		.read_command_out  (read_command_out_latched  ),
+		.read_response_out (read_response_in_internal ),
+		.read_data_0_out   (read_data_0_in_internal   ),
+		.read_data_1_out   (read_data_1_in_internal   )
 	);
 
 

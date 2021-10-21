@@ -8,7 +8,7 @@
 // Author : Abdullah Mughrabi atmughrabi@gmail.com/atmughra@ncsu.edu
 // File   : cu_vertex_cache_resue_module.sv
 // Create : 2021-10-20 18:45:25
-// Revise : 2021-10-21 02:22:26
+// Revise : 2021-10-21 14:48:04
 // Editor : sublime text4, tab size (4)
 // -----------------------------------------------------------------------------
 
@@ -89,9 +89,9 @@ module cu_vertex_cache_resue_module #(
 	CommandBufferLine read_command_out_latched_payload[0:1];
 	logic             read_command_out_latched_valid  [0:1];
 
-	////////////////////////////////////////////////////////////////////////////
-	// Read Command Arbitration
-	////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+// Read Command Arbitration
+////////////////////////////////////////////////////////////////////////////
 
 	logic [NUM_READ_REQUESTS-1:0] requests;
 	logic [NUM_READ_REQUESTS-1:0] submit  ;
@@ -205,9 +205,9 @@ module cu_vertex_cache_resue_module #(
 		end
 	end
 
-	////////////////////////////////////////////////////////////////////////////
-	//data request read logic extract single edgedata from cacheline
-	////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////
+//data request read logic extract single edgedata from cacheline
+////////////////////////////////////////////////////////////////////////////
 
 	cu_edge_data_read_extract_control cu_edge_data_read_extract_control_instant (
 		.clock         (clock                 ),
@@ -222,5 +222,36 @@ module cu_vertex_cache_resue_module #(
 	assign read_response_out_latched = read_response_in_latched;
 	assign read_data_0_out_latched   = read_data_0_in_latched;
 	assign read_data_1_out_latched   = read_data_1_in_latched;
+
+////////////////////////////////////////////////////////////////////////////
+//Cache blocks
+////////////////////////////////////////////////////////////////////////////
+
+	ram #(
+		.WIDTH(WIDTH),
+		.DEPTH(DEPTH)
+	) ram1_cache_tag_array_instant (
+		.clock   (clock    ),
+		.we      (we       ),
+		.wr_addr (wr_addr  ),
+		.data_in (data_in  ),
+		
+		.rd_addr (rd_addr1 ),
+		.data_out(data_out1)
+	);
+
+
+	ram #(
+		.WIDTH($bits(CommandBufferLine)),
+		.DEPTH(DEPTH)
+	) ram_cache_vertex_data_hot_array_instant (
+		.clock   (clock    ),
+		.we      (we       ),
+		.wr_addr (wr_addr  ),
+		.data_in (data_in  ),
+		
+		.rd_addr (rd_addr1 ),
+		.data_out(data_out1)
+	);
 
 endmodule
