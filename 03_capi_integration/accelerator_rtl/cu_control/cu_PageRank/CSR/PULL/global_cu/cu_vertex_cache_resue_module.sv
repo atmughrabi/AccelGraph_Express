@@ -8,7 +8,7 @@
 // Author : Abdullah Mughrabi atmughrabi@gmail.com/atmughra@ncsu.edu
 // File   : cu_vertex_cache_resue_module.sv
 // Create : 2021-10-20 18:45:25
-// Revise : 2021-10-21 19:13:20
+// Revise : 2021-10-21 22:02:14
 // Editor : sublime text4, tab size (4)
 // -----------------------------------------------------------------------------
 
@@ -19,11 +19,7 @@ import WED_PKG::*;
 import AFU_PKG::*;
 import CU_PKG::*;
 
-module cu_vertex_cache_resue_module #(
-	parameter NUM_READ_REQUESTS = 4                   ,
-	parameter NUM_GRAPH_CU      = NUM_GRAPH_CU_GLOBAL ,
-	parameter NUM_VERTEX_CU     = NUM_VERTEX_CU_GLOBAL
-) (
+module cu_vertex_cache_resue_module #(parameter NUM_READ_REQUESTS = 2) (
 	input  logic              clock             , // Clock
 	input  logic              rstn_in           ,
 	input  logic              enabled_in        ,

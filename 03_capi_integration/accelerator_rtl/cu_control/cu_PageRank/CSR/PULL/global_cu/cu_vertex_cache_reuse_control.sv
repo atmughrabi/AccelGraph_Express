@@ -8,7 +8,7 @@
 // Author : Abdullah Mughrabi atmughrabi@gmail.com/atmughra@ncsu.edu
 // File   : cu_vertex_cache_reuse_control.sv
 // Create : 2019-09-26 15:18:39
-// Revise : 2021-10-21 03:53:07
+// Revise : 2021-10-21 22:01:56
 // Editor : sublime text4, tab size (4)
 // -----------------------------------------------------------------------------
 
@@ -19,11 +19,7 @@ import WED_PKG::*;
 import AFU_PKG::*;
 import CU_PKG::*;
 
-module cu_vertex_cache_reuse_control #(
-	parameter NUM_READ_REQUESTS = 4                   ,
-	parameter NUM_GRAPH_CU      = NUM_GRAPH_CU_GLOBAL ,
-	parameter NUM_VERTEX_CU     = NUM_VERTEX_CU_GLOBAL
-) (
+module cu_vertex_cache_reuse_control #(parameter NUM_READ_REQUESTS = 2) (
 	input  logic              clock             , // Clock
 	input  logic              rstn_in           ,
 	input  logic              enabled_in        ,
@@ -783,11 +779,7 @@ module cu_vertex_cache_reuse_control #(
 // Caching logic
 ////////////////////////////////////////////////////////////////////////////
 
-	cu_vertex_cache_resue_module #(
-		.NUM_READ_REQUESTS(NUM_READ_REQUESTS),
-		.NUM_GRAPH_CU     (NUM_GRAPH_CU     ),
-		.NUM_VERTEX_CU    (NUM_VERTEX_CU    )
-	) cu_vertex_cache_resue_module_instant (
+	cu_vertex_cache_resue_module #(.NUM_READ_REQUESTS(NUM_READ_REQUESTS)) cu_vertex_cache_resue_module_instant (
 		.clock             (clock                           ),
 		.rstn_in           (rstn_internal                   ),
 		.enabled_in        (enabled                         ),
