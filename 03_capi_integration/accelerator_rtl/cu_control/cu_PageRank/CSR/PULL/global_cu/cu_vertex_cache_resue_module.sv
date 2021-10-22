@@ -8,7 +8,7 @@
 // Author : Abdullah Mughrabi atmughrabi@gmail.com/atmughra@ncsu.edu
 // File   : cu_vertex_cache_resue_module.sv
 // Create : 2021-10-20 18:45:25
-// Revise : 2021-10-21 14:48:04
+// Revise : 2021-10-21 19:13:20
 // Editor : sublime text4, tab size (4)
 // -----------------------------------------------------------------------------
 
@@ -218,40 +218,21 @@ module cu_vertex_cache_resue_module #(
 		.edge_data     (edge_data_variable    )
 	);
 
-	assign read_command_out_latched  = read_command_in_latched;
-	assign read_response_out_latched = read_response_in_latched;
-	assign read_data_0_out_latched   = read_data_0_in_latched;
-	assign read_data_1_out_latched   = read_data_1_in_latched;
-
 ////////////////////////////////////////////////////////////////////////////
-//Cache blocks
+//Vertes Cache blocks
 ////////////////////////////////////////////////////////////////////////////
 
-	ram #(
-		.WIDTH(WIDTH),
-		.DEPTH(DEPTH)
-	) ram1_cache_tag_array_instant (
-		.clock   (clock    ),
-		.we      (we       ),
-		.wr_addr (wr_addr  ),
-		.data_in (data_in  ),
-		
-		.rd_addr (rd_addr1 ),
-		.data_out(data_out1)
+	cu_vertex_cache_base_module cu_vertex_hot_cache_base_module_instant (
+		.clock             (clock                    ),
+		.rstn_in           (rstn_in                  ),
+		.enabled_in        (enabled_in               ),
+		.edge_data_variable(edge_data_variable       ),
+		.read_command_in   (read_command_in_latched  ),
+		.read_command_out  (read_command_out_latched ),
+		.read_response_out (read_response_out_latched),
+		.read_data_0_out   (read_data_0_out_latched  ),
+		.read_data_1_out   (read_data_1_out_latched  )
 	);
 
-
-	ram #(
-		.WIDTH($bits(CommandBufferLine)),
-		.DEPTH(DEPTH)
-	) ram_cache_vertex_data_hot_array_instant (
-		.clock   (clock    ),
-		.we      (we       ),
-		.wr_addr (wr_addr  ),
-		.data_in (data_in  ),
-		
-		.rd_addr (rd_addr1 ),
-		.data_out(data_out1)
-	);
 
 endmodule
