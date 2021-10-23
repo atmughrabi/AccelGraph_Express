@@ -160,6 +160,7 @@ proc r  {} {
         vlog -quiet $cu_control_dir/accelerator_rtl/cu_control/$graph_algorithm/$data_structure/$direction/global_cu/cu_vertex_cache_resue_module.sv
         vlog -quiet $cu_control_dir/accelerator_rtl/cu_control/$graph_algorithm/$data_structure/$direction/$cu_precision/cu/cu_sum_kernel_control.sv
         vlog -quiet $cu_control_dir/accelerator_rtl/cu_control/$graph_algorithm/$data_structure/$direction/global_cu/cu_edge_data_write_command_control.sv
+        vlog -quiet $cu_control_dir/accelerator_rtl/cu_control/$graph_algorithm/$data_structure/$direction/global_cu/cu_edge_data_cache_extract_control.sv
         vlog -quiet $cu_control_dir/accelerator_rtl/cu_control/$graph_algorithm/$data_structure/$direction/global_cu/cu_edge_data_read_extract_control.sv
         vlog -quiet $cu_control_dir/accelerator_rtl/cu_control/$graph_algorithm/$data_structure/$direction/global_cu/cu_edge_data_read_command_control.sv
         vlog -quiet $cu_control_dir/accelerator_rtl/cu_control/$graph_algorithm/$data_structure/$direction/global_cu/cu_edge_job_control.sv

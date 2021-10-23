@@ -8,7 +8,7 @@
 // Author : Abdullah Mughrabi atmughrabi@gmail.com/atmughra@ncsu.edu
 // File   : cu_vertex_cache_resue_module.sv
 // Create : 2021-10-20 18:45:25
-// Revise : 2021-10-21 22:02:14
+// Revise : 2021-10-23 17:04:18
 // Editor : sublime text4, tab size (4)
 // -----------------------------------------------------------------------------
 
@@ -71,7 +71,7 @@ module cu_vertex_cache_resue_module #(parameter NUM_READ_REQUESTS = 2) (
 	ReadWriteDataLine read_data_1_in_edge_job      ;
 	ReadWriteDataLine read_data_0_in_edge_data     ;
 	ReadWriteDataLine read_data_1_in_edge_data     ;
-	EdgeDataRead      edge_data_variable           ;
+	EdgeDataCache     edge_data_variable           ;
 	ReadWriteDataLine read_data_0_data_out    [0:1];
 	ReadWriteDataLine read_data_1_data_out    [0:1];
 
@@ -205,7 +205,7 @@ module cu_vertex_cache_resue_module #(parameter NUM_READ_REQUESTS = 2) (
 //data request read logic extract single edgedata from cacheline
 ////////////////////////////////////////////////////////////////////////////
 
-	cu_edge_data_read_extract_control cu_edge_data_read_extract_control_instant (
+	cu_edge_data_cache_extract_control cu_edge_data_cache_extract_control_instant (
 		.clock         (clock                 ),
 		.rstn          (rstn_internal         ),
 		.enabled_in    (enabled               ),

@@ -3,13 +3,13 @@
 //		"ACCEL-GRAPH Shared Memory Accelerator Project"
 //
 // -----------------------------------------------------------------------------
-// Copyright (c) 2014-2019 All rights reserved
+// Copyright (c) 2014-2021 All rights reserved
 // -----------------------------------------------------------------------------
 // Author : Abdullah Mughrabi atmughrabi@gmail.com/atmughra@ncsu.edu
 // File   : cu_pkg.sv
 // Create : 2019-09-26 15:20:09
-// Revise : 2019-11-01 04:09:54
-// Editor : sublime text3, tab size (4)
+// Revise : 2021-10-23 17:03:38
+// Editor : sublime text4, tab size (4)
 // -----------------------------------------------------------------------------
 
 package CU_PKG;
@@ -108,6 +108,16 @@ package CU_PKG;
 		logic               valid  ;
 		EdgeDataReadPayload payload;
 	} EdgeDataRead;
+
+	typedef struct packed {
+		logic [   0:(VERTEX_SIZE_BITS-1)] id  ;
+		logic [0:(DATA_SIZE_READ_BITS-1)] data;
+	} EdgeDataCachePayload;
+
+	typedef struct packed {
+		logic                valid  ;
+		EdgeDataCachePayload payload;
+	} EdgeDataCache;
 
 	typedef struct packed {
 		cu_id_t                            cu_id_x;
