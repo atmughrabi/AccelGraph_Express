@@ -8,7 +8,7 @@
 // Author : Abdullah Mughrabi atmughrabi@gmail.com/atmughra@ncsu.edu
 // File   : cu_vertex_cache_base_module.sv
 // Create : 2021-10-20 18:45:25
-// Revise : 2021-10-23 17:09:32
+// Revise : 2021-10-23 19:12:57
 // Editor : sublime text4, tab size (4)
 // -----------------------------------------------------------------------------
 
@@ -35,7 +35,7 @@ module cu_vertex_cache_base_module (
 // Cache parameters
 ////////////////////////////////////////////////////////////////////////////
 
-	parameter VERTEX_CACHE_ENTRIES_NUM = 64                                          ;
+	parameter VERTEX_CACHE_ENTRIES_NUM = 4                                          ;
 	parameter VERTEX_CACHE_INDEX_BITS  = $clog2(VERTEX_CACHE_ENTRIES_NUM)            ;
 	parameter VERTEX_CACHE_TAG_BITS    = (VERTEX_SIZE_BITS - VERTEX_CACHE_INDEX_BITS);
 	parameter VERTEX_CACHE_DATA_BITS   = $bits(EdgeDataCache)                         ;
@@ -54,15 +54,19 @@ module cu_vertex_cache_base_module (
 // Cache Memory Registers
 ////////////////////////////////////////////////////////////////////////////
 
-	logic                                 reg_CACHE_TAG_VALID     ;
-	logic                                 reg_CACHE_DATA_VALID    ;
-	logic [0:(VERTEX_CACHE_INDEX_BITS-1)] reg_CACHE_INDEX_read    ;
-	logic [0:(VERTEX_CACHE_INDEX_BITS-1)] reg_CACHE_INDEX_read_cpm;
-	logic [  0:(VERTEX_CACHE_TAG_BITS-1)] reg_CACHE_TAG_read      ;
-	logic [ 0:(VERTEX_CACHE_DATA_BITS-1)] reg_CACHE_DATA_read     ;
-	logic [0:(VERTEX_CACHE_INDEX_BITS-1)] reg_CACHE_INDEX_write   ;
-	logic [  0:(VERTEX_CACHE_TAG_BITS-1)] reg_CACHE_TAG_write     ;
-	logic [ 0:(VERTEX_CACHE_DATA_BITS-1)] reg_CACHE_DATA_write    ;
+	logic valid_data;
+	logic                                 reg_CACHE_TAG_READ_VALID  ;
+	logic                                 reg_CACHE_TAG_WRITE_VALID ;
+	logic                                 reg_CACHE_DATA_READ_VALID ;
+	logic                                 reg_CACHE_DATA_WRITE_VALID;
+	logic [0:(VERTEX_CACHE_INDEX_BITS-1)] reg_CACHE_INDEX_read      ;
+	logic [  0:(VERTEX_CACHE_TAG_BITS-1)] reg_CACHE_TAG_read        ;
+	logic [  0:(VERTEX_CACHE_TAG_BITS-1)] reg_CACHE_TAG_read_cmp    ;
+	logic [  0:(VERTEX_CACHE_TAG_BITS-1)] reg_CACHE_TAG_read_cmp_2  ;
+	logic [ 0:(VERTEX_CACHE_DATA_BITS-1)] reg_CACHE_DATA_read       ;
+	logic [0:(VERTEX_CACHE_INDEX_BITS-1)] reg_CACHE_INDEX_write     ;
+	logic [  0:(VERTEX_CACHE_TAG_BITS-1)] reg_CACHE_TAG_write       ;
+	logic [ 0:(VERTEX_CACHE_DATA_BITS-1)] reg_CACHE_DATA_write      ;
 
 ////////////////////////////////////////////////////////////////////////////
 // General Internal Registers
@@ -177,6 +181,8 @@ module cu_vertex_cache_base_module (
 	end
 
 
+	
+	assign read_command_out_latched = read_command_in_latched;
 
 	assign read_response_out_latched = read_response_out_reg;
 	assign read_data_0_out_latched   = read_data_0_out_reg;
@@ -223,25 +229,7 @@ module cu_vertex_cache_base_module (
 	end
 
 ////////////////////////////////////////////////////////////////////////////
-//Cache Read Command Logic
-////////////////////////////////////////////////////////////////////////////
-
-	logic                                 reg_CACHE_TAG_READ_VALID  ;
-	logic                                 reg_CACHE_TAG_WRITE_VALID ;
-	logic                                 reg_CACHE_DATA_READ_VALID ;
-	logic                                 reg_CACHE_DATA_WRITE_VALID;
-	logic [0:(VERTEX_CACHE_INDEX_BITS-1)] reg_CACHE_INDEX_read      ;
-	logic [  0:(VERTEX_CACHE_TAG_BITS-1)] reg_CACHE_TAG_read        ;
-	logic [ 0:(VERTEX_CACHE_DATA_BITS-1)] reg_CACHE_DATA_read       ;
-	logic [0:(VERTEX_CACHE_INDEX_BITS-1)] reg_CACHE_INDEX_write     ;
-	logic [  0:(VERTEX_CACHE_TAG_BITS-1)] reg_CACHE_TAG_write       ;
-	logic [ 0:(VERTEX_CACHE_DATA_BITS-1)] reg_CACHE_DATA_write      ;
-
-
-	assign read_command_out_latched = read_command_in_latched;
-
-////////////////////////////////////////////////////////////////////////////
-//Cache Tag Read Logic
+//Cache Data/Tag Read Logic
 ////////////////////////////////////////////////////////////////////////////
 
 	always_ff @(posedge clock or negedge rstn_internal) begin
@@ -257,12 +245,21 @@ module cu_vertex_cache_base_module (
 	end
 
 	always_ff @(posedge clock) begin
-		reg_CACHE_INDEX_read   <= (read_command_in_latched.payload.cmd.address_offset & ADDRESS_INDEX_MASK);
-		reg_CACHE_TAG_read_cmp <= (read_command_in_latched.payload.cmd.address_offset >> VERTEX_CACHE_INDEX_BITS);
+		reg_CACHE_INDEX_read     <= (read_command_in_latched.payload.cmd.address_offset & ADDRESS_INDEX_MASK);
+		reg_CACHE_TAG_read_cmp   <= (read_command_in_latched.payload.cmd.address_offset >> VERTEX_CACHE_INDEX_BITS);
+		reg_CACHE_TAG_read_cmp_2 <= reg_CACHE_TAG_read_cmp;
+		read_command_in_latched_reg   <= read_command_in_latched;
+		read_command_in_latched_reg_2 <= read_command_in_latched_reg;
+
+		edge_data_variable_reg <= reg_CACHE_DATA_read;
 	end
 
+
+	assign valid_data = read_command_in_latched_reg_2.valid & edge_data_variable_reg.valid & (reg_CACHE_TAG_read_cmp_2 == reg_CACHE_TAG_read);
+
+
 ////////////////////////////////////////////////////////////////////////////
-//Cache Tag Write Logic
+//Cache Data/Tag Write Logic
 ////////////////////////////////////////////////////////////////////////////
 
 	always_ff @(posedge clock or negedge rstn_internal) begin
@@ -280,6 +277,7 @@ module cu_vertex_cache_base_module (
 	always_ff @(posedge clock) begin
 		reg_CACHE_INDEX_write <= (edge_data_variable_latched.payload.id & ADDRESS_INDEX_MASK);
 		reg_CACHE_TAG_write   <= (edge_data_variable_latched.payload.id >> VERTEX_CACHE_INDEX_BITS);
+		reg_CACHE_DATA_write  <= edge_data_variable_latched;
 	end
 
 ////////////////////////////////////////////////////////////////////////////
@@ -300,17 +298,17 @@ module cu_vertex_cache_base_module (
 	);
 
 
-	// ram #(
-	// 	.WIDTH(VERTEX_CACHE_DATA_BITS  ),
-	// 	.DEPTH(VERTEX_CACHE_ENTRIES_NUM)
-	// ) ram_cache_vertex_data_hot_array_instant (
-	// 	.clock   (clock                ),
-	// 	.we      (reg_CACHE_DATA_VALID ),
-	// 	.wr_addr (reg_CACHE_INDEX_write),
-	// 	.data_in (reg_CACHE_DATA_write ),
-
-	// 	.rd_addr (reg_CACHE_INDEX_read ),
-	// 	.data_out(reg_CACHE_DATA_read  )
-	// );
+	ram #(
+		.WIDTH(VERTEX_CACHE_DATA_BITS  ),
+		.DEPTH(VERTEX_CACHE_ENTRIES_NUM)
+	) ram_cache_vertex_data_array_instant (
+		.clock   (clock                     ),
+		.we      (reg_CACHE_DATA_WRITE_VALID),
+		.wr_addr (reg_CACHE_INDEX_write     ),
+		.data_in (reg_CACHE_DATA_write      ),
+		
+		.rd_addr (reg_CACHE_INDEX_read      ),
+		.data_out(reg_CACHE_DATA_read       )
+	);
 
 endmodule
