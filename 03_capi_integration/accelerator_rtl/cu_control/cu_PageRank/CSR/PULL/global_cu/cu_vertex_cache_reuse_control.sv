@@ -8,7 +8,7 @@
 // Author : Abdullah Mughrabi atmughrabi@gmail.com/atmughra@ncsu.edu
 // File   : cu_vertex_cache_reuse_control.sv
 // Create : 2019-09-26 15:18:39
-// Revise : 2021-10-21 22:01:56
+// Revise : 2021-10-23 23:41:59
 // Editor : sublime text4, tab size (4)
 // -----------------------------------------------------------------------------
 
@@ -346,7 +346,7 @@ module cu_vertex_cache_reuse_control #(parameter NUM_READ_REQUESTS = 2) (
 		end
 	end
 
-	assign read_data_0_in_edge_job  = read_data_0_data_out[0];
+	assign read_data_0_in_edge_job  = read_data_0_in_latched;
 	assign read_data_0_in_edge_data = read_data_0_data_out[1];
 
 	array_struct_type_filter_command_demux_bus #(
@@ -376,7 +376,7 @@ module cu_vertex_cache_reuse_control #(parameter NUM_READ_REQUESTS = 2) (
 		end
 	end
 
-	assign read_data_1_in_edge_job  = read_data_1_data_out[0];
+	assign read_data_1_in_edge_job  = read_data_1_in_latched;
 	assign read_data_1_in_edge_data = read_data_1_data_out[1];
 
 	array_struct_type_filter_command_demux_bus #(
@@ -406,7 +406,7 @@ module cu_vertex_cache_reuse_control #(parameter NUM_READ_REQUESTS = 2) (
 		end
 	end
 
-	assign reponse_data_in_edge_job  = reponse_data_out[0];
+	assign reponse_data_in_edge_job  = read_response_in_latched;
 	assign reponse_data_in_edge_data = reponse_data_out[1];
 
 ////////////////////////////////////////////////////////////////////////////
