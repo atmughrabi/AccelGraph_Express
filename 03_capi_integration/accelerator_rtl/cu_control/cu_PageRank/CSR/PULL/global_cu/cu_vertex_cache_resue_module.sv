@@ -8,7 +8,7 @@
 // Author : Abdullah Mughrabi atmughrabi@gmail.com/atmughra@ncsu.edu
 // File   : cu_vertex_cache_resue_module.sv
 // Create : 2021-10-20 18:45:25
-// Revise : 2021-10-24 01:21:10
+// Revise : 2021-10-24 18:56:01
 // Editor : sublime text4, tab size (4)
 // -----------------------------------------------------------------------------
 
@@ -56,16 +56,22 @@ module cu_vertex_cache_resue_module #(parameter NUM_READ_REQUESTS = 2) (
 // Output
 ////////////////////////////////////////////////////////////////////////////
 
-	CommandBufferLine  read_command_out_latched ;
-	ReadWriteDataLine  read_data_0_out_latched  ;
-	ReadWriteDataLine  read_data_1_out_latched  ;
+	CommandBufferLine read_command_out_latched;
+	ReadWriteDataLine read_data_0_out_latched ;
+	ReadWriteDataLine read_data_1_out_latched ;
+
+	ReadWriteDataLine  read_data_0_out_reg  ;
+	ReadWriteDataLine  read_data_1_out_reg  ;
+	ResponseBufferLine read_response_out_reg;
+
+
 	ResponseBufferLine read_response_out_latched;
 
 ////////////////////////////////////////////////////////////////////////////
 // logic signals read data/command input arbitration
 ////////////////////////////////////////////////////////////////////////////
-	
-	EdgeDataCache     edge_data_variable           ;
+
+	EdgeDataCache edge_data_variable;
 
 ////////////////////////////////////////////////////////////////////////////
 // logic
@@ -179,20 +185,28 @@ module cu_vertex_cache_resue_module #(parameter NUM_READ_REQUESTS = 2) (
 		.edge_data     (edge_data_variable    )
 	);
 
+	// assign read_response_out_latched = read_response_in_latched;
+	// assign read_data_0_out_latched   = read_data_0_in_latched;
+	// assign read_data_1_out_latched   = read_data_1_in_latched;
+
+	assign read_response_out_latched = read_response_out_reg;
+	assign read_data_0_out_latched   = read_data_0_out_reg;
+	assign read_data_1_out_latched   = read_data_1_out_reg;
+
 ////////////////////////////////////////////////////////////////////////////
 //Vertes Cache blocks
 ////////////////////////////////////////////////////////////////////////////
 
 	cu_vertex_cache_base_module cu_vertex_hot_cache_base_module_instant (
-		.clock             (clock                    ),
-		.rstn_in           (rstn_in                  ),
-		.enabled_in        (enabled_in               ),
-		.edge_data_variable(edge_data_variable       ),
-		.read_command_in   (read_command_in_latched  ),
-		.read_command_out  (read_command_out_latched ),
-		.read_response_out (read_response_out_latched),
-		.read_data_0_out   (read_data_0_out_latched  ),
-		.read_data_1_out   (read_data_1_out_latched  )
+		.clock             (clock                   ),
+		.rstn_in           (rstn_in                 ),
+		.enabled_in        (enabled_in              ),
+		.edge_data_variable(edge_data_variable      ),
+		.read_command_in   (read_command_in_latched ),
+		.read_command_out  (read_command_out_latched),
+		.read_response_out (read_response_out_reg   ),
+		.read_data_0_out   (read_data_0_out_reg     ),
+		.read_data_1_out   (read_data_1_out_reg     )
 	);
 
 

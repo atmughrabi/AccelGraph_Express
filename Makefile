@@ -74,8 +74,8 @@ export GRAPH_SUIT ?= TEST
 # TEST # small test graphs
 # export GRAPH_NAME ?= test
 # export GRAPH_NAME ?= v51_e1021
-# export GRAPH_NAME ?= v300_e2730
-export GRAPH_NAME ?= graphbrew
+export GRAPH_NAME ?= v300_e2730
+# export GRAPH_NAME ?= graphbrew
 
 # GONG # https://gonglab.pratt.duke.edu/google-dataset
 # export GRAPH_NAME ?= GONG-gplus
@@ -147,8 +147,7 @@ export NUM_ITERATIONS	?= 1
 #PERFORMANCE
 export NUM_THREADS_PRE  ?= 4
 export NUM_THREADS_ALGO ?= $(shell grep -c ^processor /proc/cpuinfo)
-export NUM_THREADS_KER  ?= $(NUM_THREADS_ALGO)
-
+export NUM_THREADS_KER  ?= 4
 # export NUM_THREADS_PRE  ?= 1
 # export NUM_THREADS_ALGO ?= 1
 # export NUM_THREADS_KER  ?= $(NUM_THREADS_ALGO)
