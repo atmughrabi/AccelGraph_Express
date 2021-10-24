@@ -8,7 +8,7 @@
 // Author : Abdullah Mughrabi atmughrabi@gmail.com/atmughra@ncsu.edu
 // File   : cu_vertex_cache_base_module.sv
 // Create : 2021-10-20 18:45:25
-// Revise : 2021-10-24 00:46:08
+// Revise : 2021-10-24 16:08:57
 // Editor : sublime text4, tab size (4)
 // -----------------------------------------------------------------------------
 
@@ -35,18 +35,20 @@ module cu_vertex_cache_base_module (
 // Cache parameters
 ////////////////////////////////////////////////////////////////////////////
 
-	parameter VERTEX_CACHE_ENTRIES_NUM = 4                                           ;
-	parameter VERTEX_CACHE_INDEX_BITS  = $clog2(VERTEX_CACHE_ENTRIES_NUM)            ;
-	parameter VERTEX_CACHE_TAG_BITS    = (VERTEX_SIZE_BITS - VERTEX_CACHE_INDEX_BITS);
-	parameter VERTEX_CACHE_DATA_BITS   = $bits(EdgeDataCache)                        ;
-
-	parameter [0:63] ADDRESS_INDEX_MASK = {{63{1'b0}},{VERTEX_CACHE_INDEX_BITS{1'b1}}};
+	// parameter VERTEX_CACHE_ENTRIES_NUM = 16384                                           ;
+	parameter        VERTEX_CACHE_ENTRIES_NUM = 4                                           ;
+	parameter        VERTEX_CACHE_INDEX_BITS  = $clog2(VERTEX_CACHE_ENTRIES_NUM)            ;
+	parameter        VERTEX_CACHE_TAG_BITS    = (VERTEX_SIZE_BITS - VERTEX_CACHE_INDEX_BITS);
+	parameter        VERTEX_CACHE_DATA_BITS   = $bits(EdgeDataCache)                        ;
+	parameter        RSP_DELAY                = 11                                          ;
+	parameter [0:63] ADDRESS_INDEX_MASK       = {{63{1'b0}},{VERTEX_CACHE_INDEX_BITS{1'b1}}};
 
 ////////////////////////////////////////////////////////////////////////////
 // General Internal reset/enable signals
 ////////////////////////////////////////////////////////////////////////////
 
 	integer i            ;
+	genvar  j            ;
 	logic   rstn_internal;
 	logic   enabled      ;
 
@@ -72,16 +74,18 @@ module cu_vertex_cache_base_module (
 // General Internal Registers
 ////////////////////////////////////////////////////////////////////////////
 
-	logic                                reg_DATA_VARIABLE_valid      ;
-	logic [0:(CACHELINE_SIZE_BITS_HF-1)] reg_DATA_VARIABLE_0          ;
-	logic [0:(CACHELINE_SIZE_BITS_HF-1)] reg_DATA_VARIABLE_1          ;
-	EdgeDataCache                        edge_data_variable_reg       ;
-	ReadWriteDataLine                    read_data_0_out_reg          ;
-	ReadWriteDataLine                    read_data_1_out_reg          ;
-	ResponseBufferLine                   read_response_out_reg        ;
-	CommandBufferLine                    read_command_in_latched_reg  ;
-	CommandBufferLine                    read_command_in_latched_reg_2;
-	CommandBufferLine                    read_command_in_latched_reg_3;
+	ResponseBufferLine                   response_control_out_latched_S[0:RSP_DELAY-1];
+	logic                                reg_DATA_VARIABLE_valid                      ;
+	logic [0:(CACHELINE_SIZE_BITS_HF-1)] reg_DATA_VARIABLE_0                          ;
+	logic [0:(CACHELINE_SIZE_BITS_HF-1)] reg_DATA_VARIABLE_1                          ;
+	EdgeDataCache                        edge_data_variable_reg                       ;
+	ReadWriteDataLine                    read_data_0_out_reg                          ;
+	ReadWriteDataLine                    read_data_1_out_reg                          ;
+	ResponseBufferLine                   read_response_out_reg                        ;
+	CommandBufferLine                    read_command_in_latched_reg                  ;
+	CommandBufferLine                    read_command_in_latched_reg_2                ;
+	CommandBufferLine                    read_command_in_latched_reg_3                ;
+	CommandBufferLine                    read_command_in_latched_reg_4                ;
 
 ////////////////////////////////////////////////////////////////////////////
 // Input
@@ -184,9 +188,9 @@ module cu_vertex_cache_base_module (
 
 
 	// assign read_command_out_latched = read_command_in_latched;
-	assign read_response_out_latched = read_response_out_reg;
-	assign read_data_0_out_latched   = read_data_0_out_reg;
-	assign read_data_1_out_latched   = read_data_1_out_reg;
+	// assign read_response_out_latched = read_response_out_reg;
+	assign read_data_0_out_latched = read_data_0_out_reg;
+	assign read_data_1_out_latched = read_data_1_out_reg;
 
 ////////////////////////////////////////////////////////////////////////////
 //Construct Data Cachelines and Response Packets
@@ -211,11 +215,13 @@ module cu_vertex_cache_base_module (
 	end
 
 	always_ff @(posedge clock) begin
-		read_response_out_reg.payload.cmd <= read_command_in_latched_reg_3.payload.cmd ;
-		read_data_0_out_reg.payload.cmd   <= read_command_in_latched_reg_3.payload.cmd ;
-		read_data_1_out_reg.payload.cmd   <= read_command_in_latched_reg_3.payload.cmd ;
-		read_data_0_out_reg.payload.data  <= reg_DATA_VARIABLE_0 ;
-		read_data_1_out_reg.payload.data  <= reg_DATA_VARIABLE_1 ;
+		read_response_out_reg.payload.cmd              <= read_command_in_latched_reg_4.payload.cmd ;
+		read_response_out_reg.payload.response_credits <= 0 ;
+		read_response_out_reg.payload.response         <= DONE;
+		read_data_0_out_reg.payload.cmd                <= read_command_in_latched_reg_4.payload.cmd ;
+		read_data_1_out_reg.payload.cmd                <= read_command_in_latched_reg_4.payload.cmd ;
+		read_data_0_out_reg.payload.data               <= reg_DATA_VARIABLE_0 ;
+		read_data_1_out_reg.payload.data               <= reg_DATA_VARIABLE_1 ;
 	end
 
 	always_ff @(posedge clock or negedge rstn_internal) begin
@@ -234,6 +240,44 @@ module cu_vertex_cache_base_module (
 		for (i = 0; i < CACHELINE_DATA_READ_NUM_HF; i++) begin
 			reg_DATA_VARIABLE_0[DATA_SIZE_READ_BITS*i+:DATA_SIZE_READ_BITS] <= edge_data_variable_reg.payload.data;
 			reg_DATA_VARIABLE_1[DATA_SIZE_READ_BITS*i+:DATA_SIZE_READ_BITS] <= edge_data_variable_reg.payload.data;
+		end
+	end
+
+////////////////////////////////////////////////////////////////////////////
+//Response delay logic
+////////////////////////////////////////////////////////////////////////////
+
+	always_ff @(posedge clock or negedge rstn_internal) begin
+		if(~rstn_internal) begin
+			response_control_out_latched_S[0].valid <= 0;
+		end else begin
+			if(enabled) begin // cycle delay for responses to make sure data_out arrives and handled before
+				response_control_out_latched_S[0] <= read_response_out_reg;
+			end
+		end
+	end
+
+	generate
+		for ( j = 1; j < (RSP_DELAY); j++) begin : generate_response_delay
+			always_ff @(posedge clock or negedge rstn_internal) begin
+				if(~rstn_internal) begin
+					response_control_out_latched_S[j].valid  <= 0;
+				end else begin
+					if(enabled) begin // cycle delay for responses to make sure data_out arrives and handled before
+						response_control_out_latched_S[j] <= response_control_out_latched_S[j-1];
+					end
+				end
+			end
+		end
+	endgenerate
+
+	always_ff @(posedge clock or negedge rstn_internal) begin
+		if(~rstn_internal) begin
+			read_response_out_latched.valid <= 0;
+		end else begin
+			if(enabled) begin // cycle delay for responses to make sure data_out arrives and handled before
+				read_response_out_latched <= response_control_out_latched_S[RSP_DELAY-1];
+			end
 		end
 	end
 
@@ -271,6 +315,7 @@ module cu_vertex_cache_base_module (
 		reg_CACHE_TAG_read_2          <= reg_CACHE_TAG_read;
 		reg_CACHE_TAG_read_cmp_3      <= reg_CACHE_TAG_read_cmp_2;
 		read_command_in_latched_reg_3 <= read_command_in_latched_reg_2;
+		read_command_in_latched_reg_4 <= read_command_in_latched_reg_3;
 
 
 	end
