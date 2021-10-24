@@ -8,7 +8,7 @@
 // Author : Abdullah Mughrabi atmughrabi@gmail.com/atmughra@ncsu.edu
 // File   : cu_vertex_cache_resue_module.sv
 // Create : 2021-10-20 18:45:25
-// Revise : 2021-10-23 17:04:18
+// Revise : 2021-10-24 01:21:10
 // Editor : sublime text4, tab size (4)
 // -----------------------------------------------------------------------------
 
@@ -64,43 +64,8 @@ module cu_vertex_cache_resue_module #(parameter NUM_READ_REQUESTS = 2) (
 ////////////////////////////////////////////////////////////////////////////
 // logic signals read data/command input arbitration
 ////////////////////////////////////////////////////////////////////////////
-
-	logic cache_miss;
-
-	ReadWriteDataLine read_data_0_in_edge_job      ;
-	ReadWriteDataLine read_data_1_in_edge_job      ;
-	ReadWriteDataLine read_data_0_in_edge_data     ;
-	ReadWriteDataLine read_data_1_in_edge_data     ;
+	
 	EdgeDataCache     edge_data_variable           ;
-	ReadWriteDataLine read_data_0_data_out    [0:1];
-	ReadWriteDataLine read_data_1_data_out    [0:1];
-
-	ReadWriteDataLine read_data_0_data_out_latched[0:1];
-	ReadWriteDataLine read_data_1_data_out_latched[0:1];
-
-	logic read_data_0_data_out_latched_valid[0:1];
-	logic read_data_1_data_out_latched_valid[0:1];
-
-	CommandBufferLine read_command_out_latched_full   [0:1];
-	CommandBufferLine read_command_out_latched_payload[0:1];
-	logic             read_command_out_latched_valid  [0:1];
-
-////////////////////////////////////////////////////////////////////////////
-// Read Command Arbitration
-////////////////////////////////////////////////////////////////////////////
-
-	logic [NUM_READ_REQUESTS-1:0] requests;
-	logic [NUM_READ_REQUESTS-1:0] submit  ;
-
-	logic [NUM_READ_REQUESTS-1:0] ready                       ;
-	logic [NUM_READ_REQUESTS-1:0] ready_round_robin           ;
-	logic                         round_robin_priority_enabled;
-
-	BufferStatus      command_buffer_status          [0:NUM_READ_REQUESTS-1];
-	CommandBufferLine command_buffer_in              [0:NUM_READ_REQUESTS-1];
-	CommandBufferLine command_arbiter_out_round_robin                       ;
-	CommandBufferLine command_arbiter_out                                   ;
-
 
 ////////////////////////////////////////////////////////////////////////////
 // logic
