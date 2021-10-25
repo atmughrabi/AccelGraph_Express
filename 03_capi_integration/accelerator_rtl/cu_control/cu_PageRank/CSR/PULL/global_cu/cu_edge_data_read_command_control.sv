@@ -3,13 +3,13 @@
 //		"ACCEL-GRAPH Shared Memory Accelerator Project"
 //
 // -----------------------------------------------------------------------------
-// Copyright (c) 2014-2019 All rights reserved
+// Copyright (c) 2014-2021 All rights reserved
 // -----------------------------------------------------------------------------
 // Author : Abdullah Mughrabi atmughrabi@gmail.com/atmughra@ncsu.edu
 // File   : cu_edge_data_read_command_control.sv
 // Create : 2019-09-26 15:18:46
-// Revise : 2019-11-08 10:49:54
-// Editor : sublime text3, tab size (4)
+// Revise : 2021-10-24 21:31:31
+// Editor : sublime text4, tab size (4)
 // -----------------------------------------------------------------------------
 
 
@@ -176,14 +176,14 @@ module cu_edge_data_read_command_control #(
 	end
 
 	always_ff @(posedge clock) begin
-		read_command_out_latched.payload.address              <= wed_request_in_latched.payload.wed.auxiliary1 + ((edge_job_variable.payload.dest<< $clog2(DATA_SIZE_READ)) & ADDRESS_DATA_READ_ALIGN_MASK);
+		read_command_out_latched.payload.address              <= wed_request_in_latched.payload.wed.auxiliary1 + (((edge_job_variable.payload.dest & VERTEX_CACHE_MASK_U32) << $clog2(DATA_SIZE_READ)) & ADDRESS_DATA_READ_ALIGN_MASK);
 		read_command_out_latched.payload.size                 <= 12'h080;
 		read_command_out_latched.payload.cmd.real_size        <= 1'b1;
 		read_command_out_latched.payload.cmd.real_size_bytes  <= DATA_SIZE_READ;
 		read_command_out_latched.payload.cmd.array_struct     <= READ_GRAPH_DATA;
-		read_command_out_latched.payload.cmd.cacheline_offset <= (((edge_job_variable.payload.dest << $clog2(DATA_SIZE_READ)) & ADDRESS_DATA_READ_MOD_MASK) >> $clog2(DATA_SIZE_READ));
-		read_command_out_latched.payload.cmd.address_offset   <= edge_job_variable.payload.dest;
-		read_command_out_latched.payload.cmd.aux_data         <= 0;
+		read_command_out_latched.payload.cmd.cacheline_offset <= ((((edge_job_variable.payload.dest & VERTEX_CACHE_MASK_U32) << $clog2(DATA_SIZE_READ)) & ADDRESS_DATA_READ_MOD_MASK) >> $clog2(DATA_SIZE_READ));
+		read_command_out_latched.payload.cmd.address_offset   <= (edge_job_variable.payload.dest & VERTEX_CACHE_MASK_U32);
+		read_command_out_latched.payload.cmd.aux_data         <= (edge_job_variable.payload.dest & VERTEX_VALUE_MASK_U32);
 		read_command_out_latched.payload.cmd.cu_id_x          <= CU_ID_X;
 		read_command_out_latched.payload.cmd.cu_id_y          <= CU_ID_Y;
 		read_command_out_latched.payload.cmd.cmd_type         <= CMD_READ;

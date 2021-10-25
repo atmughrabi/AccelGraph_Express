@@ -8,7 +8,7 @@
 // Author : Abdullah Mughrabi atmughrabi@gmail.com/atmughra@ncsu.edu
 // File   : cu_pkg.sv
 // Create : 2019-09-26 15:20:09
-// Revise : 2021-10-23 17:03:38
+// Revise : 2021-10-24 21:04:17
 // Editor : sublime text4, tab size (4)
 // -----------------------------------------------------------------------------
 
@@ -118,6 +118,17 @@ package CU_PKG;
 		logic                valid  ;
 		EdgeDataCachePayload payload;
 	} EdgeDataCache;
+
+
+	typedef struct packed {
+		logic [0:(DATA_SIZE_READ_BITS-1)] data;
+	} EdgeDataCacheEntryPayload;
+
+	typedef struct packed {
+		logic                valid  ;
+		EdgeDataCacheEntryPayload payload;
+	} EdgeDataCacheEntry;
+
 
 	typedef struct packed {
 		cu_id_t                            cu_id_x;

@@ -147,7 +147,7 @@ export NUM_ITERATIONS	?= 1
 #PERFORMANCE
 export NUM_THREADS_PRE  ?= 4
 export NUM_THREADS_ALGO ?= $(shell grep -c ^processor /proc/cpuinfo)
-export NUM_THREADS_KER  ?= 16
+export NUM_THREADS_KER  ?= 17
 # export NUM_THREADS_PRE  ?= 1
 # export NUM_THREADS_ALGO ?= 1
 # export NUM_THREADS_KER  ?= $(NUM_THREADS_ALGO)
@@ -162,7 +162,7 @@ export CONVERT_FORMAT 	?= 1
 #STATS COLLECTION VARIABLES
 export BIN_SIZE 		?= 1000
 export INOUT_STATS 		?= 0
-export MASK_MODE 		?= 0
+export MASK_MODE 		?= 1
 
 ##################################################
 

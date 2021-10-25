@@ -8,7 +8,7 @@
 // Author : Abdullah Mughrabi atmughrabi@gmail.com/atmughra@ncsu.edu
 // File   : globals_cu_pkg.sv
 // Create : 2019-09-26 15:20:15
-// Revise : 2021-10-24 19:49:37
+// Revise : 2021-10-24 21:20:53
 // Editor : sublime text4, tab size (4)
 // -----------------------------------------------------------------------------
 
@@ -79,6 +79,20 @@ package GLOBALS_CU_PKG;
 	parameter [0:63] ADDRESS_EDGE_MOD_MASK   = {{57{1'b0}},{7{1'b1}}};
 
 	parameter CACHELINE_INT_COUNTER_BITS = $clog2(CACHELINE_SIZE);
+
+////////////////////////////////////////////////////////////////////////////
+//  HOT COLD MASK
+////////////////////////////////////////////////////////////////////////////
+
+	parameter VERTEX_HEAT_SIZE_BITS = 2;
+
+	parameter VERTEX_VALUE_MASK_U32 = {{VERTEX_HEAT_SIZE_BITS{1'b1}},{(VERTEX_SIZE_BITS-VERTEX_HEAT_SIZE_BITS){1'b0}}};
+	parameter VERTEX_CACHE_MASK_U32 = {{VERTEX_HEAT_SIZE_BITS{1'b0}},{(VERTEX_SIZE_BITS-VERTEX_HEAT_SIZE_BITS){1'b1}}};
+
+	parameter VERTEX_VALUE_HOT_U32      = 32'hC0000000;
+	parameter VERTEX_CACHE_WARM_U32     = 32'h80000000;
+	parameter VERTEX_VALUE_LUKEWARM_U32 = 32'h40000000;
+	parameter VERTEX_CACHE_COLD_U32     = 32'h00000000;
 
 ////////////////////////////////////////////////////////////////////////////
 //  AFU/CU-Control CU IDs any compute unit that generate command must have an ID

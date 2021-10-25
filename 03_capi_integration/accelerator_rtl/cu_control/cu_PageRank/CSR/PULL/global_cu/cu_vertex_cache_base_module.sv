@@ -8,7 +8,7 @@
 // Author : Abdullah Mughrabi atmughrabi@gmail.com/atmughra@ncsu.edu
 // File   : cu_vertex_cache_base_module.sv
 // Create : 2021-10-20 18:45:25
-// Revise : 2021-10-24 19:50:07
+// Revise : 2021-10-24 21:38:15
 // Editor : sublime text4, tab size (4)
 // -----------------------------------------------------------------------------
 
@@ -35,13 +35,12 @@ module cu_vertex_cache_base_module (
 // Cache parameters
 ////////////////////////////////////////////////////////////////////////////
 
-	parameter VERTEX_CACHE_ENTRIES_NUM = 16384;
-	// parameter        VERTEX_CACHE_ENTRIES_NUM = 16                                          ;
-	parameter        VERTEX_CACHE_INDEX_BITS = $clog2(VERTEX_CACHE_ENTRIES_NUM)            ;
-	parameter        VERTEX_CACHE_TAG_BITS   = (VERTEX_SIZE_BITS - VERTEX_CACHE_INDEX_BITS);
-	parameter        VERTEX_CACHE_DATA_BITS  = $bits(EdgeDataCache)                        ;
-	parameter        RSP_DELAY               = 11                                          ;
-	parameter [0:63] ADDRESS_INDEX_MASK      = {{63{1'b0}},{VERTEX_CACHE_INDEX_BITS{1'b1}}};
+	parameter        VERTEX_CACHE_ENTRIES_NUM = 8192                                                                  ;
+	parameter        VERTEX_CACHE_INDEX_BITS  = $clog2(VERTEX_CACHE_ENTRIES_NUM)                                      ;
+	parameter        VERTEX_CACHE_TAG_BITS    = (VERTEX_SIZE_BITS - VERTEX_CACHE_INDEX_BITS)                          ;
+	parameter        VERTEX_CACHE_DATA_BITS   = $bits(EdgeDataCacheEntry)                                             ;
+	parameter        RSP_DELAY                = 11                                                                    ;
+	parameter [0:63] ADDRESS_INDEX_MASK       = {{(64-VERTEX_CACHE_INDEX_BITS){1'b0}},{VERTEX_CACHE_INDEX_BITS{1'b1}}};
 
 ////////////////////////////////////////////////////////////////////////////
 // General Internal reset/enable signals
@@ -78,7 +77,7 @@ module cu_vertex_cache_base_module (
 	logic                                reg_DATA_VARIABLE_valid                      ;
 	logic [0:(CACHELINE_SIZE_BITS_HF-1)] reg_DATA_VARIABLE_0                          ;
 	logic [0:(CACHELINE_SIZE_BITS_HF-1)] reg_DATA_VARIABLE_1                          ;
-	EdgeDataCache                        edge_data_variable_reg                       ;
+	EdgeDataCacheEntry                   edge_data_variable_reg                       ;
 	ReadWriteDataLine                    read_data_0_out_reg                          ;
 	ReadWriteDataLine                    read_data_1_out_reg                          ;
 	ReadWriteDataLine                    read_data_1_out_reg_2                        ;
