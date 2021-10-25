@@ -8,7 +8,7 @@
 // Author : Abdullah Mughrabi atmughrabi@gmail.com/atmughra@ncsu.edu
 // File   : cu_vertex_cache_reuse_control.sv
 // Create : 2019-09-26 15:18:39
-// Revise : 2021-10-25 07:15:21
+// Revise : 2021-10-25 12:17:58
 // Editor : sublime text4, tab size (4)
 // -----------------------------------------------------------------------------
 
@@ -22,7 +22,7 @@ import CU_PKG::*;
 module cu_vertex_cache_reuse_control #(
 	parameter NUM_READ_REQUESTS = 2   ,
 	parameter NUM_HEAT_REGIONS  = 4   ,
-	parameter NUM_CACHE_ENTRIES = 4096
+	parameter NUM_CACHE_ENTRIES = 8192
 ) (
 	input  logic              clock             , // Clock
 	input  logic              rstn_in           ,
