@@ -8,7 +8,7 @@
 // Author : Abdullah Mughrabi atmughrabi@gmail.com/atmughra@ncsu.edu
 // File   : cu_vertex_cache_base_module.sv
 // Create : 2021-10-20 18:45:25
-// Revise : 2021-10-24 21:38:15
+// Revise : 2021-10-25 03:37:38
 // Editor : sublime text4, tab size (4)
 // -----------------------------------------------------------------------------
 
@@ -19,7 +19,7 @@ import WED_PKG::*;
 import AFU_PKG::*;
 import CU_PKG::*;
 
-module cu_vertex_cache_base_module (
+module cu_vertex_cache_base_module #(parameter NUM_CACHE_ENTRIES = 8192) (
 	input  logic              clock             ,
 	input  logic              rstn_in           ,
 	input  logic              enabled_in        ,
@@ -35,7 +35,7 @@ module cu_vertex_cache_base_module (
 // Cache parameters
 ////////////////////////////////////////////////////////////////////////////
 
-	parameter        VERTEX_CACHE_ENTRIES_NUM = 8192                                                                  ;
+	parameter        VERTEX_CACHE_ENTRIES_NUM = NUM_CACHE_ENTRIES                                                     ;
 	parameter        VERTEX_CACHE_INDEX_BITS  = $clog2(VERTEX_CACHE_ENTRIES_NUM)                                      ;
 	parameter        VERTEX_CACHE_TAG_BITS    = (VERTEX_SIZE_BITS - VERTEX_CACHE_INDEX_BITS)                          ;
 	parameter        VERTEX_CACHE_DATA_BITS   = $bits(EdgeDataCacheEntry)                                             ;

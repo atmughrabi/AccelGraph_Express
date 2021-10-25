@@ -8,7 +8,7 @@
 // Author : Abdullah Mughrabi atmughrabi@gmail.com/atmughra@ncsu.edu
 // File   : cu_vertex_cache_resue_module.sv
 // Create : 2021-10-20 18:45:25
-// Revise : 2021-10-24 18:56:01
+// Revise : 2021-10-25 04:55:27
 // Editor : sublime text4, tab size (4)
 // -----------------------------------------------------------------------------
 
@@ -19,7 +19,10 @@ import WED_PKG::*;
 import AFU_PKG::*;
 import CU_PKG::*;
 
-module cu_vertex_cache_resue_module #(parameter NUM_READ_REQUESTS = 2) (
+module cu_vertex_cache_resue_module #(
+	parameter NUM_READ_REQUESTS = 2   ,
+	parameter NUM_CACHE_ENTRIES = 8192
+) (
 	input  logic              clock             , // Clock
 	input  logic              rstn_in           ,
 	input  logic              enabled_in        ,
@@ -197,7 +200,7 @@ module cu_vertex_cache_resue_module #(parameter NUM_READ_REQUESTS = 2) (
 //Vertes Cache blocks
 ////////////////////////////////////////////////////////////////////////////
 
-	cu_vertex_cache_base_module cu_vertex_hot_cache_base_module_instant (
+	cu_vertex_cache_base_module #(.NUM_CACHE_ENTRIES(NUM_CACHE_ENTRIES)) cu_vertex_cache_base_module_instant (
 		.clock             (clock                   ),
 		.rstn_in           (rstn_in                 ),
 		.enabled_in        (enabled_in              ),
