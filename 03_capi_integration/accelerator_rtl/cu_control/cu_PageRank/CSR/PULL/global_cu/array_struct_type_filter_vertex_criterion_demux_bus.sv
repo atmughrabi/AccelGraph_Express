@@ -8,7 +8,7 @@
 // Author : Abdullah Mughrabi atmughrabi@gmail.com/atmughra@ncsu.edu
 // File   : array_struct_type_filter_vertex_criterion_demux_bus.sv
 // Create : 2021-10-25 02:57:07
-// Revise : 2021-10-25 04:53:31
+// Revise : 2021-10-25 05:54:40
 // Editor : sublime text4, tab size (4)
 // -----------------------------------------------------------------------------
 
@@ -77,14 +77,14 @@ module array_struct_type_filter_vertex_criterion_demux_bus #(
 				end
 				VERTEX_CACHE_WARM_U32 : begin
 					data_out_valid_internal[0] <= 0;
-					data_out_valid_internal[1] <= data_in_valid_internal;
-					data_out_valid_internal[2] <= 0;
+					data_out_valid_internal[1] <= 0;
+					data_out_valid_internal[2] <= data_in_valid_internal;
 					data_out_valid_internal[3] <= 0;
 				end
 				VERTEX_VALUE_LUKEWARM_U32 : begin
 					data_out_valid_internal[0] <= 0;
-					data_out_valid_internal[1] <= 0;
-					data_out_valid_internal[2] <= data_in_valid_internal;
+					data_out_valid_internal[1] <= data_in_valid_internal;
+					data_out_valid_internal[2] <= 0;
 					data_out_valid_internal[3] <= 0;
 				end
 				default : begin

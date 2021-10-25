@@ -8,7 +8,7 @@
 // Author : Abdullah Mughrabi atmughrabi@gmail.com/atmughra@ncsu.edu
 // File   : cu_vertex_cache_reuse_control.sv
 // Create : 2019-09-26 15:18:39
-// Revise : 2021-10-25 05:12:18
+// Revise : 2021-10-25 05:48:33
 // Editor : sublime text4, tab size (4)
 // -----------------------------------------------------------------------------
 
@@ -22,7 +22,7 @@ import CU_PKG::*;
 module cu_vertex_cache_reuse_control #(
 	parameter NUM_READ_REQUESTS = 2   ,
 	parameter NUM_HEAT_REGIONS  = 4   ,
-	parameter NUM_CACHE_ENTRIES = 16
+	parameter NUM_CACHE_ENTRIES = 8192
 ) (
 	input  logic              clock             , // Clock
 	input  logic              rstn_in           ,
@@ -1053,7 +1053,7 @@ module cu_vertex_cache_reuse_control #(
 	array_struct_type_filter_vertex_criterion_demux_bus #(.DATA_WIDTH($bits(ReadWriteDataLine))) array_struct_type_filter_vertex_criterion_data_0_demux_bus_instant (
 		.clock         (clock                                        ),
 		.rstn          (rstn_internal                                ),
-		.sel_in        (read_data_0_in_edge_data.payload.cmd.aux_data[0:31]),
+		.sel_in        (read_data_0_in_edge_data.payload.cmd.aux_data[32:63]),
 		.data_in       (read_data_0_in_edge_data                     ),
 		.data_in_valid (read_data_0_in_edge_data.valid               ),
 		.data_out      (read_data_0_edge_data_region_latched         ),
@@ -1087,7 +1087,7 @@ module cu_vertex_cache_reuse_control #(
 	array_struct_type_filter_vertex_criterion_demux_bus #(.DATA_WIDTH($bits(ReadWriteDataLine))) array_struct_type_filter_vertex_criterion_data_1_demux_bus_instant (
 		.clock         (clock                                        ),
 		.rstn          (rstn_internal                                ),
-		.sel_in        (read_data_1_in_edge_data.payload.cmd.aux_data[0:31]),
+		.sel_in        (read_data_1_in_edge_data.payload.cmd.aux_data[32:63]),
 		.data_in       (read_data_1_in_edge_data                     ),
 		.data_in_valid (read_data_1_in_edge_data.valid               ),
 		.data_out      (read_data_1_edge_data_region_latched         ),
@@ -1121,7 +1121,7 @@ module cu_vertex_cache_reuse_control #(
 	array_struct_type_filter_vertex_criterion_demux_bus #(.DATA_WIDTH($bits(ResponseBufferLine))) array_struct_type_filter_vertex_criterion_response_demux_bus_instant (
 		.clock         (clock                                         ),
 		.rstn          (rstn_internal                                 ),
-		.sel_in        (reponse_data_in_edge_data.payload.cmd.aux_data[0:31]),
+		.sel_in        (reponse_data_in_edge_data.payload.cmd.aux_data[32:63]),
 		.data_in       (reponse_data_in_edge_data                     ),
 		.data_in_valid (reponse_data_in_edge_data.valid               ),
 		.data_out      (response_data_edge_data_region_latched        ),
@@ -1155,7 +1155,7 @@ module cu_vertex_cache_reuse_control #(
 	array_struct_type_filter_vertex_criterion_demux_bus #(.DATA_WIDTH($bits(CommandBufferLine))) array_struct_type_filter_vertex_criterion_command_demux_bus_instant (
 		.clock         (clock                                                ),
 		.rstn          (rstn_internal                                        ),
-		.sel_in        (read_command_out_latched_full[1].payload.cmd.aux_data[0:31]),
+		.sel_in        (read_command_out_latched_full[1].payload.cmd.aux_data[32:63]),
 		.data_in       (read_command_out_latched_full[1]                     ),
 		.data_in_valid (read_command_out_latched_full[1].valid               ),
 		.data_out      (read_command_out_full_region_latched                 ),
