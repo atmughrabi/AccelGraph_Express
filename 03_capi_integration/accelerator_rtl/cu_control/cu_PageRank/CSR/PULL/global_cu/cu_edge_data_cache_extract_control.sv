@@ -8,7 +8,7 @@
 // Author : Abdullah Mughrabi atmughrabi@gmail.com/atmughra@ncsu.edu
 // File   : cu_edge_data_cache_extract_control.sv
 // Create : 2021-10-23 16:53:58
-// Revise : 2021-10-23 17:09:46
+// Revise : 2021-10-26 00:11:10
 // Editor : sublime text4, tab size (4)
 // -----------------------------------------------------------------------------
 
@@ -36,12 +36,12 @@ module cu_edge_data_cache_extract_control #(
 	EdgeDataCache edge_data_variable    ;
 	EdgeDataCache edge_data_variable_reg;
 	//input lateched
-	ReadWriteDataLine read_data_0_in_latched   ;
-	ReadWriteDataLine read_data_0_in_latched_S2;
-	ReadWriteDataLine read_data_1_in_latched   ;
-	logic [0:7]       offset_data_0            ;
-	logic [   0:(VERTEX_SIZE_BITS-1)] vertex_id  ;
-	logic             enabled                  ;
+	ReadWriteDataLine              read_data_0_in_latched   ;
+	ReadWriteDataLine              read_data_0_in_latched_S2;
+	ReadWriteDataLine              read_data_1_in_latched   ;
+	logic [                   0:7] offset_data_0            ;
+	logic [0:(VERTEX_SIZE_BITS-1)] vertex_id                ;
+	logic                          enabled                  ;
 
 	logic [           0:CACHELINE_SIZE_BITS-1] read_data_in;
 	logic [0:(CACHELINE_DATA_READ_NUM_BITS-1)] address_rd  ;
@@ -118,7 +118,7 @@ module cu_edge_data_cache_extract_control #(
 		if(~rstn) begin
 			read_data_in <= 0;
 			address_rd   <= 0;
-			vertex_id      <= 0;
+			vertex_id    <= 0;
 		end else begin
 			if(enabled) begin
 				if(read_data_0_in_latched.valid && read_data_1_in_latched.valid)begin
@@ -129,7 +129,7 @@ module cu_edge_data_cache_extract_control #(
 				end else begin
 					read_data_in <= 0;
 					address_rd   <= 0;
-					vertex_id      <= 0;
+					vertex_id    <= 0;
 				end
 			end
 		end

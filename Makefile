@@ -22,7 +22,7 @@ export CAPI_PRECIS_INTEG_DIR   	= $(APP_DIR_CAPI_PRECIS)/01_capi_integration
 export CAPI_INTEG_DIR      		= 03_capi_integration
 export SCRIPT_DIR          		= 05_scripts
 
-export BENCHMARKS_DIR_LOCAL    	= 01_test_graphs
+export BENCHMARKS_DIR_LOCAL    	= ../../01_GraphDatasets
 # export BENCHMARKS_DIR    		= ../../../01_GraphDatasets
 
 #dir root/managed_folders
@@ -60,21 +60,21 @@ export MAIN_DIR		  	= main
 #       		 ACCEL RUN GRAPH ARGUMENTS    			#
 #########################################################
 
-# export BENCHMARKS_DIR    	?= ../../../01_GraphDatasets
+export BENCHMARKS_DIR    	?= ../../../01_GraphDatasets
 # export BENCHMARKS_DIR    	?= ../01_test_graphs
 
 # export GRAPH_SUIT ?=
-export GRAPH_SUIT ?= TEST
+# export GRAPH_SUIT ?= TEST
 # export GRAPH_SUIT ?= LAW
 # export GRAPH_SUIT ?= GAP
-# export GRAPH_SUIT ?= SNAP
+export GRAPH_SUIT ?= SNAP
 # export GRAPH_SUIT ?= KONECT
 # export GRAPH_SUIT ?= GONG
 
 # TEST # small test graphs
 # export GRAPH_NAME ?= test
 # export GRAPH_NAME ?= v51_e1021
-export GRAPH_NAME ?= v300_e2730
+# export GRAPH_NAME ?= v300_e2730
 # export GRAPH_NAME ?= graphbrew
 
 # GONG # https://gonglab.pratt.duke.edu/google-dataset
@@ -90,7 +90,7 @@ export GRAPH_NAME ?= v300_e2730
 # export GRAPH_NAME ?= SNAP-com-Orkut
 # export GRAPH_NAME ?= SNAP-soc-LiveJournal1
 # export GRAPH_NAME ?= SNAP-soc-Pokec
-# export GRAPH_NAME ?= SNAP-web-Google
+export GRAPH_NAME ?= SNAP-web-Google
 
 # KONECT # http://konect.cc/networks/wikipedia_link_en/
 # export GRAPH_NAME ?= KONECT-wikipedia_link_en
@@ -145,9 +145,9 @@ export DELTA			?= 800
 export NUM_ITERATIONS	?= 1
 
 #PERFORMANCE
-export NUM_THREADS_PRE  ?= 4
+export NUM_THREADS_PRE  ?= $(shell grep -c ^processor /proc/cpuinfo)
 export NUM_THREADS_ALGO ?= $(shell grep -c ^processor /proc/cpuinfo)
-export NUM_THREADS_KER  ?= 16
+export NUM_THREADS_KER  ?= 25
 # export NUM_THREADS_PRE  ?= 1
 # export NUM_THREADS_ALGO ?= 1
 # export NUM_THREADS_KER  ?= $(NUM_THREADS_ALGO)

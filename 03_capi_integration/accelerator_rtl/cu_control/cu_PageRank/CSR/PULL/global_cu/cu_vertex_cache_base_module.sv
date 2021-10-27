@@ -8,7 +8,7 @@
 // Author : Abdullah Mughrabi atmughrabi@gmail.com/atmughra@ncsu.edu
 // File   : cu_vertex_cache_base_module.sv
 // Create : 2021-10-20 18:45:25
-// Revise : 2021-10-25 03:37:38
+// Revise : 2021-10-26 00:09:02
 // Editor : sublime text4, tab size (4)
 // -----------------------------------------------------------------------------
 
@@ -19,7 +19,7 @@ import WED_PKG::*;
 import AFU_PKG::*;
 import CU_PKG::*;
 
-module cu_vertex_cache_base_module #(parameter NUM_CACHE_ENTRIES = 8192) (
+module cu_vertex_cache_base_module #(parameter NUM_CACHE_ENTRIES = 16384) (
 	input  logic              clock             ,
 	input  logic              rstn_in           ,
 	input  logic              enabled_in        ,
@@ -54,7 +54,7 @@ module cu_vertex_cache_base_module #(parameter NUM_CACHE_ENTRIES = 8192) (
 ////////////////////////////////////////////////////////////////////////////
 // Cache Memory Registers
 ////////////////////////////////////////////////////////////////////////////
-
+	logic [         0:(EDGE_SIZE_BITS-1)] reg_CACHE_hit             ;
 	logic                                 valid_data                ;
 	logic                                 reg_CACHE_TAG_READ_VALID  ;
 	logic                                 reg_CACHE_DATA_WRITE_VALID;
@@ -351,6 +351,18 @@ module cu_vertex_cache_base_module #(parameter NUM_CACHE_ENTRIES = 8192) (
 		end
 	end
 
+
+	always_ff @(posedge clock or negedge rstn_internal) begin
+		if(~rstn_internal) begin
+			reg_CACHE_hit <= 0;
+		end else begin
+			if(valid_data)begin
+				reg_CACHE_hit <= reg_CACHE_hit + 1;
+			end else begin
+				reg_CACHE_hit <= reg_CACHE_hit;
+			end
+		end
+	end
 
 ////////////////////////////////////////////////////////////////////////////
 //Cache Data/Tag Write Logic

@@ -8,7 +8,7 @@
 // Author : Abdullah Mughrabi atmughrabi@gmail.com/atmughra@ncsu.edu
 // File   : cu_vertex_cache_resue_module.sv
 // Create : 2021-10-20 18:45:25
-// Revise : 2021-10-25 04:55:27
+// Revise : 2021-10-25 19:39:55
 // Editor : sublime text4, tab size (4)
 // -----------------------------------------------------------------------------
 
@@ -21,7 +21,7 @@ import CU_PKG::*;
 
 module cu_vertex_cache_resue_module #(
 	parameter NUM_READ_REQUESTS = 2   ,
-	parameter NUM_CACHE_ENTRIES = 8192
+	parameter NUM_CACHE_ENTRIES = 16384
 ) (
 	input  logic              clock             , // Clock
 	input  logic              rstn_in           ,
